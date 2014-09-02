@@ -16,21 +16,21 @@ namespace HairConnect\Transformers;
 class UsersTransformer extends Transformers{
 
     /**
-     * @param $user
+     * @param $users
      * @return array
      */
-    public function transform($user){
-        $mname = ($user['mname'] !== '') ? ' '.$user['mname'] : '';
+    public function transform($users){
+        $mname = ($users['mname'] !== '') ? ' '.$users['mname'] : '';
         return [
-            'username'      =>  $user['username'],
-            'name'          =>  $user['fname'].$mname.' '.$user['lname'],
-            'profile_image' =>  $user['image'],
-            'contact_no'    =>  $user['contact_no'],
-            'email'         =>  $user['email'],
-            'online'        =>  (boolean)$user['active'],
-            'activate'      =>  (boolean)$user['deleted'],
-            'group'         =>  ($user['group']) ? 'customer' : 'barber',
-            'member_since'  =>  $user['created_at']
+            'username'      =>  $users['username'],
+            'name'          =>  $users['fname'].$mname.' '.$users['lname'],
+            'profile_image' =>  $users['image'],
+            'contact_no'    =>  $users['contact_no'],
+            'email'         =>  $users['email'],
+            'online'        =>  (boolean)$users['active'],
+            'activate'      =>  (boolean)$users['deleted'],
+            'group'         =>  ($users['group']) ? 'customer' : 'barber',
+            'member_since'  =>  $users['created_at']
         ];
     }
 } 

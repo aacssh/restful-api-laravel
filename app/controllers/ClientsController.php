@@ -1,22 +1,22 @@
 <?php
-use \HairConnect\Transformers\BarbersTransformer;
+use \HairConnect\Transformers\ClientsTransformer;
 
-class BarbersController extends UsersController {
+class ClientsController extends UsersController {
 
 	/**
-	 * [$barbersTransformer description]
+	 * [$clientsTransformer description]
 	 * @var [type]
 	 */
-	protected $barbersTransformer;
+	protected $clientsTransformer;
 
 	/**
 	 * [__construct description]
-	 * @param BarbersTransformer $barbersTransformer [description]
+	 * @param ClientsTransformer $clientsTransformer [description]
 	 */
-	function __construct(BarbersTransformer $barbersTransformer){
-		$this->barbersTransformer = $barbersTransformer;
+	function __construct(ClientsTransformer $clientsTransformer){
+		$this->clientsTransformer = $clientsTransformer;
 	}
-	
+
 	/**
 	 * Display a listing of the resource.
 	 *
@@ -24,12 +24,11 @@ class BarbersController extends UsersController {
 	 */
 	public function index()
 	{
-        $users = User::where('group', '=', 0)->get();
+		$users = User::where('group', '=', 1)->get();
         return Response::json([
-            'data' => $this->barbersTransformer->transformCollection($users->all())
+            'data' => $this->clientsTransformer->transformCollection($users->all())
         ]);
 	}
-
 
 	/**
 	 * Show the form for creating a new resource.
@@ -41,7 +40,6 @@ class BarbersController extends UsersController {
 		//
 	}
 
-
 	/**
 	 * Store a newly created resource in storage.
 	 *
@@ -51,7 +49,6 @@ class BarbersController extends UsersController {
 	{
 		//
 	}
-
 
 	/**
 	 * Display the specified resource.
@@ -64,7 +61,6 @@ class BarbersController extends UsersController {
 		//
 	}
 
-
 	/**
 	 * Show the form for editing the specified resource.
 	 *
@@ -75,7 +71,6 @@ class BarbersController extends UsersController {
 	{
 		//
 	}
-
 
 	/**
 	 * Update the specified resource in storage.
@@ -88,7 +83,6 @@ class BarbersController extends UsersController {
 		//
 	}
 
-
 	/**
 	 * Remove the specified resource from storage.
 	 *
@@ -99,6 +93,5 @@ class BarbersController extends UsersController {
 	{
 		//
 	}
-
 
 }

@@ -23,28 +23,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="UsersController.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="UsersController.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="0.1891892" vertical-offset="0" max-vertical-offset="1512">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="APIController.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BarbersController.php" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="1380">
+            <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-1.8888888" vertical-offset="75" max-vertical-offset="1512">
               <folding />
             </state>
           </provider>
@@ -53,10 +35,26 @@
       <file leaf-file-name="routes.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/routes.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="45" selection-start="290" selection-end="290" vertical-scroll-proportion="-3.75" vertical-offset="0" max-vertical-offset="288">
-              <folding>
-                <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-              </folding>
+            <state line="6" column="48" selection-start="396" selection-end="396" vertical-scroll-proportion="-4.0" vertical-offset="0" max-vertical-offset="306">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BarbersController.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="13" column="34" selection-start="280" selection-end="280" vertical-scroll-proportion="-8.666667" vertical-offset="0" max-vertical-offset="1710">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="UsersTransformer.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="32" column="50" selection-start="941" selection-end="941" vertical-scroll-proportion="0.7096774" vertical-offset="156" max-vertical-offset="648">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -78,10 +76,10 @@
         <option value="$PROJECT_DIR$/app/controllers/APIController.php" />
         <option value="$PROJECT_DIR$/app/HairConnect/Transformers/Transformers.php" />
         <option value="$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php" />
-        <option value="$PROJECT_DIR$/app/controllers/BarbersController.php" />
         <option value="$PROJECT_DIR$/app/database/migrations/2014_09_01_171829_create_Users_table.php" />
         <option value="$PROJECT_DIR$/app/database/seeds/UsersTableSeeder.php" />
         <option value="$PROJECT_DIR$/app/routes.php" />
+        <option value="$PROJECT_DIR$/app/controllers/BarbersController.php" />
         <option value="$PROJECT_DIR$/app/controllers/UsersController.php" />
       </list>
     </option>
@@ -89,9 +87,9 @@
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
     <option name="x" value="49" />
-    <option name="y" value="24" />
+    <option name="y" value="-4" />
     <option name="width" value="1317" />
-    <option name="height" value="744" />
+    <option name="height" value="772" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -107,7 +105,7 @@
     <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1" splitterProportion="0.5">
+    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -118,13 +116,90 @@
       <autoscrollFromSource />
       <sortByType />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="HairConnect" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Transformers" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="controllers" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FullScreen" value="false" />
     <property name="SearchEverywhereHistory" value="yes" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../auth_system" />
+    <property name="full.screen.before.presentation.mode" value="false" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="PHPUnitRunConfigurationType" factoryName="PHPUnit">
@@ -169,15 +244,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="49" y="24" width="1317" height="744" extended-state="6" />
-    <editor active="true" />
+    <frame x="49" y="-4" width="1317" height="772" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2753825" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" x="49" y="37" width="1317" height="690" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2753825" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" x="49" y="37" width="1317" height="690" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21791951" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.16173121" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
@@ -233,9 +308,7 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="3" selection-start="857" selection-end="857" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="342">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -263,9 +336,7 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="3" selection-start="857" selection-end="857" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="342">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -293,9 +364,7 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="3" selection-start="857" selection-end="857" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="342">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -323,18 +392,14 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="6" column="4" selection-start="250" selection-end="250" vertical-scroll-proportion="0.0" vertical-offset="14" max-vertical-offset="285">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="47" selection-start="102" selection-end="102" vertical-scroll-proportion="0.0" vertical-offset="30" max-vertical-offset="195">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -362,9 +427,7 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="46" selection-start="101" selection-end="101" vertical-scroll-proportion="0.0" vertical-offset="30" max-vertical-offset="135">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -415,9 +478,7 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="2" column="35" selection-start="90" selection-end="90" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="135">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -451,18 +512,14 @@
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="44" selection-start="112" selection-end="112" vertical-scroll-proportion="0.0" vertical-offset="75" max-vertical-offset="165">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="5" column="44" selection-start="112" selection-end="112" vertical-scroll-proportion="0.0" vertical-offset="75" max-vertical-offset="165">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -491,13 +548,6 @@
         <state line="10" column="5" selection-start="130" selection-end="130" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="360" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="1380">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/database/migrations/2014_09_01_171829_create_Users_table.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="29" column="33" selection-start="822" selection-end="822" vertical-scroll-proportion="-10.625" vertical-offset="165" max-vertical-offset="750" />
@@ -508,11 +558,6 @@
         <state line="21" column="48" selection-start="669" selection-end="669" vertical-scroll-proportion="0.5808824" vertical-offset="78" max-vertical-offset="525" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="50" selection-start="941" selection-end="941" vertical-scroll-proportion="-16.0" vertical-offset="21" max-vertical-offset="540" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/Transformers.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="18" column="47" selection-start="379" selection-end="379" vertical-scroll-proportion="0.627907" vertical-offset="0" max-vertical-offset="430" />
@@ -520,7 +565,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240">
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.6107692" vertical-offset="0" max-vertical-offset="650">
           <folding />
         </state>
       </provider>
@@ -532,16 +577,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="45" selection-start="290" selection-end="290" vertical-scroll-proportion="-3.75" vertical-offset="0" max-vertical-offset="288">
-          <folding>
-            <marker date="1409683776518" expanded="true" signature="244:347" placeholder="..." />
-          </folding>
+        <state line="6" column="48" selection-start="396" selection-end="396" vertical-scroll-proportion="-4.0" vertical-offset="0" max-vertical-offset="306">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="0.1891892" vertical-offset="0" max-vertical-offset="1512">
+        <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-1.8888888" vertical-offset="75" max-vertical-offset="1512">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="34" selection-start="280" selection-end="280" vertical-scroll-proportion="-8.666667" vertical-offset="0" max-vertical-offset="1710">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="50" selection-start="941" selection-end="941" vertical-scroll-proportion="0.7096774" vertical-offset="156" max-vertical-offset="648">
           <folding />
         </state>
       </provider>
