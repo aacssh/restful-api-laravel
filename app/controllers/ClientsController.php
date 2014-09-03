@@ -36,9 +36,21 @@ class ClientsController extends UsersController {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function show($id)
+	public function show($username)
 	{
-		//
+		$client = User::whereUsername($username)->where('active', '=', 1);
+		
+		if($client->count()){
+			return Response::json([
+				'details' 	=> 	$this->clientsTransformer->transform($client->first())
+			]);
+		}
+
+		return Response::json([
+			'errors' => [
+				'message'	=>	'There is no client associated with given username.'
+			]
+		]);
 	}
 
 	/**

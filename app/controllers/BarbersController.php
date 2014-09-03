@@ -1,5 +1,6 @@
 <?php
 use \HairConnect\Transformers\BarbersTransformer;
+use \HairConnect\Transformers\ImagesTransformer;
 
 class BarbersController extends UsersController {
 
@@ -9,12 +10,15 @@ class BarbersController extends UsersController {
 	 */
 	protected $barbersTransformer;
 
+	protected $imagesTransformer;
+
 	/**
 	 * [__construct description]
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
-	function __construct(BarbersTransformer $barbersTransformer){
-		$this->barbersTransformer = $barbersTransformer;
+	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer){
+		$this->barbersTransformer 	=	$barbersTransformer;
+		$this->imagesTransformer 	=	$imagesTransformer;	 
 	}
 	
 	/**
@@ -44,32 +48,20 @@ class BarbersController extends UsersController {
 		if($barber->count()){
 			//echo '<pre>', print_r($barber->first(), true),'</pre>';
 			
-			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id);
-	
-			
-				return $hsi->get();
-			
+			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
 
-			die();
 			return Response::json([
-				'data' 		=> 	$this->barbersTransformer->transform($barber->first())
-				'images' 	=>	$this->
+				'details' 			=> 	$this->barbersTransformer->transform($barber->first()),
+				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
 			]);
 		}
+
+		return Response::json([
+			'errors' => [
+				'message'	=>	'There is no barber associated with given username.'
+			]
+		]);
 	}
-
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
-
 
 	/**
 	 * Update the specified resource in storage.
@@ -79,7 +71,7 @@ class BarbersController extends UsersController {
 	 */
 	public function update($id)
 	{
-		//
+		
 	}
 
 
@@ -93,6 +85,4 @@ class BarbersController extends UsersController {
 	{
 		//
 	}
-
-
 }
