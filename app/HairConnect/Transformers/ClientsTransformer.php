@@ -21,7 +21,8 @@ class ClientsTransformer extends Transformers{
             'online'        =>  (boolean)$client['active'],
             'activate'      =>  (boolean)$client['deleted'],
             'group'         =>  ($client['group']) ? 'customer' : 'barber',
-            'member_since'  =>  $client['created_at']
+            'member_since'  =>  $client['created_at'],
+            'resource_uri'	=>  \Request::url().'/'.$client['username']
         ];
 	}
 }

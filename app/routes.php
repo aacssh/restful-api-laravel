@@ -1,7 +1,7 @@
 <?php
 Route::group(['prefix' => 'api/v1'], function(){
 
-    Route::post('login', ['as' => 'api.v1.users.login', 'uses' => 'UsersController@store']);
+    Route::post('login', ['as' => 'api.v1.users.login', 'uses' => 'UsersController@update']);
     Route::get('logout', ['as' => 'api.v1.users.logout', 'uses' => 'UsersController@destroy']);
     Route::post('register', ['as' => 'api.v1.users.register', 'uses' => 'RegistersController@store']);
     Route::resource('users', 'UsersController');

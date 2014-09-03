@@ -24,44 +24,38 @@ class BarbersController extends UsersController {
 	 */
 	public function index()
 	{
-        $users = User::where('group', '=', 0)->get();
+		//return Request::url();
+        $barbers = User::where('group', '=', 0)->get();
         return Response::json([
-            'data' => $this->barbersTransformer->transformCollection($users->all())
+            'data' => $this->barbersTransformer->transformCollection($barbers->all())
         ]);
 	}
-
-
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
-	}
-
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
-		//
-	}
-
 
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int  $id
+	 * @param  int  $username
 	 * @return Response
 	 */
-	public function show($id)
+	public function show($username)
 	{
-		//
+		$barber = User::whereUsername($username)->where('active', '=', 1);
+		
+		if($barber->count()){
+			//echo '<pre>', print_r($barber->first(), true),'</pre>';
+			
+			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id);
+	
+			
+				return $hsi->get();
+			
+
+			die();
+			return Response::json([
+				'data' 		=> 	$this->barbersTransformer->transform($barber->first())
+				'images' 	=>	$this->
+			]);
+		}
 	}
 
 

@@ -26,7 +26,7 @@
       <file leaf-file-name="UsersController.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-1.8888888" vertical-offset="75" max-vertical-offset="1512">
+            <state line="0" column="5" selection-start="5" selection-end="5" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1116">
               <folding />
             </state>
           </provider>
@@ -35,7 +35,7 @@
       <file leaf-file-name="routes.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/routes.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="48" selection-start="396" selection-end="396" vertical-scroll-proportion="-4.0" vertical-offset="0" max-vertical-offset="306">
+            <state line="6" column="48" selection-start="397" selection-end="397" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="306">
               <folding />
             </state>
           </provider>
@@ -44,16 +44,34 @@
       <file leaf-file-name="BarbersController.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="34" selection-start="280" selection-end="280" vertical-scroll-proportion="-8.666667" vertical-offset="0" max-vertical-offset="1710">
+            <state line="9" column="34" selection-start="203" selection-end="203" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="1638">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="UsersTransformer.php" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="UsersTransformer.php" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="32" column="50" selection-start="941" selection-end="941" vertical-scroll-proportion="0.7096774" vertical-offset="156" max-vertical-offset="648">
+            <state line="32" column="50" selection-start="954" selection-end="954" vertical-scroll-proportion="0.0" vertical-offset="576" max-vertical-offset="738">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="HairStyleImageTableSeeder.php" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/database/seeds/HairStyleImageTableSeeder.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="17" column="47" selection-start="491" selection-end="491" vertical-scroll-proportion="0.6530612" vertical-offset="18" max-vertical-offset="504">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="2014_09_03_094400_create_hair_style_image_table.php" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/database/migrations/2014_09_03_094400_create_hair_style_image_table.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="18" column="42" selection-start="433" selection-end="433" vertical-scroll-proportion="0.0" vertical-offset="324" max-vertical-offset="738">
               <folding />
             </state>
           </provider>
@@ -75,12 +93,13 @@
         <option value="$PROJECT_DIR$/app/database/seeds/DatabaseSeeder.php" />
         <option value="$PROJECT_DIR$/app/controllers/APIController.php" />
         <option value="$PROJECT_DIR$/app/HairConnect/Transformers/Transformers.php" />
-        <option value="$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php" />
         <option value="$PROJECT_DIR$/app/database/migrations/2014_09_01_171829_create_Users_table.php" />
         <option value="$PROJECT_DIR$/app/database/seeds/UsersTableSeeder.php" />
         <option value="$PROJECT_DIR$/app/routes.php" />
         <option value="$PROJECT_DIR$/app/controllers/BarbersController.php" />
         <option value="$PROJECT_DIR$/app/controllers/UsersController.php" />
+        <option value="$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php" />
+        <option value="$PROJECT_DIR$/app/database/seeds/HairStyleImageTableSeeder.php" />
       </list>
     </option>
   </component>
@@ -164,11 +183,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="HairConnect" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Transformers" />
+              <option name="myItemId" value="database" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -186,7 +201,33 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="controllers" />
+              <option name="myItemId" value="database" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="seeds" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="restful_api" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="database" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="migrations" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -284,6 +325,20 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="396" max-vertical-offset="1656">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/routes.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="13" column="3" selection-start="857" selection-end="857" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="342">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state line="47" column="21" selection-start="1112" selection-end="1112" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1512">
@@ -293,9 +348,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="288">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="288" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
@@ -321,37 +374,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="288">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="396" max-vertical-offset="1656">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/routes.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="3" selection-start="857" selection-end="857" vertical-scroll-proportion="0.0" vertical-offset="234" max-vertical-offset="342">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="47" column="21" selection-start="1112" selection-end="1112" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1512">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="288">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="288" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
@@ -377,9 +400,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
@@ -412,9 +433,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
@@ -440,9 +459,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="135" max-vertical-offset="240" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/Transformers.php">
@@ -565,9 +582,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/APIController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.6107692" vertical-offset="0" max-vertical-offset="650">
-          <folding />
-        </state>
+        <state line="9" column="0" selection-start="136" selection-end="136" vertical-scroll-proportion="0.6107692" vertical-offset="0" max-vertical-offset="650" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/config/database.php">
@@ -577,28 +592,42 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/routes.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="48" selection-start="396" selection-end="396" vertical-scroll-proportion="-4.0" vertical-offset="0" max-vertical-offset="306">
+        <state line="6" column="48" selection-start="397" selection-end="397" vertical-scroll-proportion="0.0" vertical-offset="108" max-vertical-offset="306">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/UsersController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-1.8888888" vertical-offset="75" max-vertical-offset="1512">
+        <state line="0" column="5" selection-start="5" selection-end="5" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1116">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/controllers/BarbersController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="34" selection-start="280" selection-end="280" vertical-scroll-proportion="-8.666667" vertical-offset="0" max-vertical-offset="1710">
+        <state line="9" column="34" selection-start="203" selection-end="203" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="1638">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/HairConnect/Transformers/UsersTransformer.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="50" selection-start="941" selection-end="941" vertical-scroll-proportion="0.7096774" vertical-offset="156" max-vertical-offset="648">
+        <state line="32" column="50" selection-start="954" selection-end="954" vertical-scroll-proportion="0.0" vertical-offset="576" max-vertical-offset="738">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/database/migrations/2014_09_03_094400_create_hair_style_image_table.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="18" column="42" selection-start="433" selection-end="433" vertical-scroll-proportion="0.0" vertical-offset="324" max-vertical-offset="738">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/database/seeds/HairStyleImageTableSeeder.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="17" column="47" selection-start="491" selection-end="491" vertical-scroll-proportion="0.6530612" vertical-offset="18" max-vertical-offset="504">
           <folding />
         </state>
       </provider>
