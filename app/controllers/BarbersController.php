@@ -48,9 +48,9 @@ class BarbersController extends UsersController {
 	{
 		$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1);
 		
-		if($barber->count()){			
+		if($barber->count()){		
 			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
-
+			return Appointment::where('barber_id', '=', $barber->first()->id)->get();
 			return Response::json([
 				'details' 			=> 	$this->barbersTransformer->transform($barber->first()),
 				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
@@ -107,7 +107,6 @@ class BarbersController extends UsersController {
 			]
 		]);
 	}
-
 
 	/**
 	 * Remove the specified resource from storage.
