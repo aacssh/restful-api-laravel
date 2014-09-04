@@ -31,16 +31,7 @@ class BarbersTransformer extends Transformers{
             'activate'      =>  (boolean)$barber['deleted'],
             'group'         =>  ($barber['group']) ? 'customer' : 'barber',
             'member_since'  =>  $barber['created_at'],
-            'resource_uri'	=>  \Request::url().'/'.$barber['username']
+            'resource_uri'	=>  \URL::to('/').'/barbers/'.$barber['username']
         ];
-    }
-
-    public function transformWithImage($barber){
-    	$data = $this->transform($barber);
-    	return array_merge($data, [
-    		'hair_style_images' => [
-    			''
-    		]
-    	]);
     }
 } 

@@ -48,7 +48,7 @@ class ClientsController extends UsersController {
 
 		return Response::json([
 			'errors' => [
-				'message'	=>	'There is no client associated with given username.'
+				'message'	=>	'Client cannot be found or the account is deactivated.'
 			]
 		]);
 	}
@@ -56,12 +56,45 @@ class ClientsController extends UsersController {
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int  $id
+	 * @param  int  $username
 	 * @return Response
 	 */
-	public function update($id)
+	public function update($username)
 	{
-		//
+		$validation = Validator::make(Input::all(), [
+			'fname'			=> 	'required|Alpha',
+			'lname'			=>	'required|Alpha',
+			'contact_no'	=>	'required|numeric',
+			'address'		=>	'required',
+			'email'			=>	'required|email'
+		]);
+
+		if(!$validation->fails()){
+			$client = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 1)->get();
+
+			if($client->count()){
+				$client = $client->first();
+				$client->fname = Input::get('fname');
+				$client->lname = Input::get('lname');
+				$client->contact_no = Input::get('contact_no');
+				$client->address 	=	Input::get('address');
+				$client->email 		=	Input::get('email');
+				$client->save();
+
+				$client = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 1)->get();
+			
+				return Response::json([
+					'message'	=>	'Profile info have been updated.',
+					'data'		=>	$this->clientsTransformer->transform($client->first())
+				]);
+			}
+		}
+		return Response::json([
+			'errors' => [
+				'message'			=>	'Profile info cannot be updated.',
+				'errors_details'	=>	$validation->messages()
+			]
+		]);
 	}
 
 	/**
@@ -74,5 +107,4 @@ class ClientsController extends UsersController {
 	{
 		//
 	}
-
 }

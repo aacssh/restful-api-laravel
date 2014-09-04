@@ -2,7 +2,7 @@
 namespace HairConnect\Transformers;
 
 abstract class Transformers{
-
+    
     /**
      * Transforms a collection of data
      * @param array $items

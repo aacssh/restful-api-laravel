@@ -10,6 +10,10 @@ class BarbersController extends UsersController {
 	 */
 	protected $barbersTransformer;
 
+	/**
+	 * [$imagesTransformer description]
+	 * @var [type]
+	 */
 	protected $imagesTransformer;
 
 	/**
@@ -28,10 +32,9 @@ class BarbersController extends UsersController {
 	 */
 	public function index()
 	{
-		//return Request::url();
         $barbers = User::where('group', '=', 0)->get();
         return Response::json([
-            'data' => $this->barbersTransformer->transformCollection($barbers->all())
+            'data' => $this->barbersTransformer->transformCollection($barbers->all()),
         ]);
 	}
 
@@ -43,11 +46,9 @@ class BarbersController extends UsersController {
 	 */
 	public function show($username)
 	{
-		$barber = User::whereUsername($username)->where('active', '=', 1);
+		$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1);
 		
-		if($barber->count()){
-			//echo '<pre>', print_r($barber->first(), true),'</pre>';
-			
+		if($barber->count()){			
 			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
 
 			return Response::json([
@@ -58,7 +59,7 @@ class BarbersController extends UsersController {
 
 		return Response::json([
 			'errors' => [
-				'message'	=>	'There is no barber associated with given username.'
+				'message'	=>	'Barber cannot be found or the account is deactivated.'
 			]
 		]);
 	}
@@ -66,12 +67,45 @@ class BarbersController extends UsersController {
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int  $id
+	 * @param  int  $username
 	 * @return Response
 	 */
-	public function update($id)
+	public function update($username)
 	{
-		
+		$validation = Validator::make(Input::all(), [
+			'fname'			=> 	'required|Alpha',
+			'lname'			=>	'required|Alpha',
+			'contact_no'	=>	'required|numeric',
+			'address'		=>	'required',
+			'email'			=>	'required|email'
+		]);
+
+		if(!$validation->fails()){
+			$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1)->get();
+
+			if($barber->count()){
+				$barber = $barber->first();
+				$barber->fname = Input::get('fname');
+				$barber->lname = Input::get('lname');
+				$barber->contact_no = Input::get('contact_no');
+				$barber->address 	=	Input::get('address');
+				$barber->email 		=	Input::get('email');
+				$barber->save();
+
+				$barber = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 0)->get();
+			
+				return Response::json([
+					'message'	=>	'Profile info have been updated.',
+					'data'		=>	$this->barbersTransformer->transform($barber->first())
+				]);
+			}
+		}
+		return Response::json([
+			'errors' => [
+				'message'			=>	'Profile info cannot be updated.',
+				'errors_details'	=>	$validation->messages()
+			]
+		]);
 	}
 
 

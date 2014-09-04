@@ -15,7 +15,6 @@ class UsersTableSeeder extends Seeder {
                 'username'  =>  $faker->userName,
                 'password'  =>  Hash::make('software'),
                 'fname'     =>  $faker->firstName,
-                'mname'     =>  '',
                 'lname'     =>  $faker->lastName,
                 'image'     =>  $faker->imageUrl(300, 200),
                 'contact_no'=>  $faker->phoneNumber(),
