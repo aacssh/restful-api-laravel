@@ -9,4 +9,5 @@ Route::group(['prefix' => 'api/v1'], function(){
     Route::resource('clients', 'ClientsController', ['except' => ['store', 'create', 'edit']]);
     Route::resource('barbers.appointments', 'AppointmentsController', ['except' => ['store', 'create', 'edit', 'update']]);
     Route::resource('clients.appointments', 'ClientsAppointmentsController', ['except' => ['create', 'edit', 'update']]);
+    Route::resource('barbers.shifts', 'ShiftsController', ['except' =>	['create', 'edit', 'destroy']]);
 });

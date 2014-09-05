@@ -7,19 +7,23 @@ class ShiftsController extends \BaseController {
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index($username)
 	{
-		//
-	}
+		$log		=	User::whereUsername($username)->get();
+		if($log->count()){
+			$barber	=	Barber::where('login_id', '=', $log->first()->id)->get();
+			if($barber->count()){
+				$barber = $barber->first();
+				$shift 	= Shift::where('barber_id', '=', $barber->id)->get();
 
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		//
+				if($shift->count()){
+					return $shift;
+				}
+				
+			}
+		}
+
+		
 	}
 
 	/**
@@ -39,17 +43,6 @@ class ShiftsController extends \BaseController {
 	 * @return Response
 	 */
 	public function show($id)
-	{
-		//
-	}
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
 	{
 		//
 	}
