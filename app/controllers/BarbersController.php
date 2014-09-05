@@ -2,7 +2,7 @@
 use \HairConnect\Transformers\BarbersTransformer;
 use \HairConnect\Transformers\ImagesTransformer;
 
-class BarbersController extends UsersController {
+class BarbersController extends \BaseController {
 
 	/**
 	 * [$barbersTransformer description]
@@ -21,8 +21,8 @@ class BarbersController extends UsersController {
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
 	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer){
-		$this->barbersTransformer 	=	$barbersTransformer;
-		$this->imagesTransformer 	=	$imagesTransformer;	 
+		$this->barbersTransformer 		=	$barbersTransformer;
+		$this->imagesTransformer 		=	$imagesTransformer;	 
 	}
 	
 	/**
@@ -32,9 +32,9 @@ class BarbersController extends UsersController {
 	 */
 	public function index()
 	{
-        $barbers = User::where('group', '=', 0)->get();
+        $barbers = Barber::all();
         return Response::json([
-            'data' => $this->barbersTransformer->transformCollection($barbers->all()),
+            'data' 						=> $this->barbersTransformer->transformCollection($barbers->all()),
         ]);
 	}
 
@@ -46,20 +46,24 @@ class BarbersController extends UsersController {
 	 */
 	public function show($username)
 	{
-		$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1);
-		
-		if($barber->count()){
-			$hsi = HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
-			
-			return Response::json([
-				'details' 			=> 	$this->barbersTransformer->transform($barber->first()),
-				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
-			]);
-		}
+		$login_id						=	User::whereUsername($username)->get();
+		if($login_id->count()){
+			$barber 					= 	Barber::where('login_id', '=', $login_id->first()->id);
+
+			if($barber->count()){
+				$hsi 					= 	HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
+				
+				return Response::json([
+					'details' 			=> 	$this->barbersTransformer->transform($barber->first()),
+					'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
+				]);
+			}
+		}		
+		//$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1);
 
 		return Response::json([
 			'errors' => [
-				'message'	=>	'Barber cannot be found or the account is deactivated.'
+				'message'				=>	'Barber cannot be found or the account is deactivated.'
 			]
 		]);
 	}
@@ -73,37 +77,48 @@ class BarbersController extends UsersController {
 	public function update($username)
 	{
 		$validation = Validator::make(Input::all(), [
-			'fname'			=> 	'required|Alpha',
-			'lname'			=>	'required|Alpha',
-			'contact_no'	=>	'required|numeric',
-			'address'		=>	'required',
-			'email'			=>	'required|email'
+			'fname'						=> 	'required|Alpha',
+			'lname'						=>	'required|Alpha',
+			'contact_no'				=>	'required|numeric',
+			'address'					=>	'required',
+			'email'						=>	'required|email'
 		]);
 
 		if(!$validation->fails()){
-			$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1)->get();
+			$login						=	User::whereUsername($username)->get();
+			
+			if($login->count()){
+				$login 					=	$login->first();
+				$barber 				= 	Barber::where('login_id', '=', $login->id)
+													->where('active', '=', 1)->get();	
+			}
 
 			if($barber->count()){
-				$barber = $barber->first();
-				$barber->fname = Input::get('fname');
-				$barber->lname = Input::get('lname');
-				$barber->contact_no = Input::get('contact_no');
-				$barber->address 	=	Input::get('address');
-				$barber->email 		=	Input::get('email');
+				$barber 				= $barber->first();
+				$barber->fname 			= Input::get('fname');
+				$barber->lname 			= Input::get('lname');
+				$barber->contact_no 	= Input::get('contact_no');
+				$barber->address 		=	Input::get('address');
 				$barber->save();
 
-				$barber = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 0)->get();
+				if($email = Input::get('email')){
+					$login->email 		=	$email;
+					$login->save();
+				}
+				
+				$barber 				= Barber::where('login_id', '=', $login->id)
+												->where('active', '=', 1)->get();
 			
 				return Response::json([
-					'message'	=>	'Profile info have been updated.',
-					'data'		=>	$this->barbersTransformer->transform($barber->first())
+					'message'			=>	'Profile info have been updated.',
+					'data'				=>	$this->barbersTransformer->transform($barber->first())
 				]);
 			}
 		}
 		return Response::json([
 			'errors' => [
-				'message'			=>	'Profile info cannot be updated.',
-				'errors_details'	=>	$validation->messages()
+				'message'				=>	'Profile info cannot be updated.',
+				'errors_details'		=>	$validation->messages()
 			]
 		]);
 	}
@@ -111,11 +126,31 @@ class BarbersController extends UsersController {
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int  $id
+	 * @param  string  $username
 	 * @return Response
 	 */
-	public function destroy($id)
+	public function destroy($username)
 	{
-		//
+		$login							=	User::whereUsername($username)->get();
+		if($login->count()){
+			$barber 					= 	Barber::where('login_id', '=', $login->first()->id);
+
+			if($barber->count()){
+				$barber 				= 	$barber->first();
+				$barber->active			=	0;
+				$barber->deleted		=	0;
+				$barber->save();
+
+				return Response::json([
+					'message' 			=> 'Account has been successfully deactivated.',
+					'activate'			=>	(bool)$barber->deleted
+				]);
+			}
+		}
+		return Response::json([
+			'error' => [
+				'message'				=>	'Barber not registered or deactivated.'
+			]
+		]);
 	}
 }

@@ -1,8 +1,7 @@
 <?php
 use \HairConnect\Transformers\AppointmentsTransformer;
 
-class AppointmentsController extends \BaseController {
-
+class ClientsAppointmentsController extends \BaseController{	
 	/**
 	 * [$appointmentsTransformer description]
 	 * @var [type]
@@ -28,32 +27,34 @@ class AppointmentsController extends \BaseController {
 		$login_id								=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$barber 							= 	Barber::where('login_id', '=', $login_id->first()->id);
+			$client 							= 	Client::where('login_id', '=', $login_id->first()->id);
 
-			if($barber->count()){
-				$barber 						= 	$barber->first();
-				$appointments 					= 	Appointment::where('barber_id', '=', $barber->id)->get();
+			if($client->count()){
+				$client 						= 	$client->first();
+				$appointments 					= 	Appointment::where('client_id', '=', $client->id)->get();
 				
 				if($appointments->count()){
-					$clients 					= 	[];
+					$client_appointments 				= 	[];
 					foreach ($appointments as $appointment) {
-						$client 				= 	Client::where('id', '=', $appointment->client_id)->get()->first();
+						$barber 				= 	Barber::where('id', '=', $appointment->barber_id)->get()->first();
 						$date 					= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 						
-						array_push($clients,[
+						array_push($client_appointments,[
 							'appointment_id'	=>	$appointment->id,
-							'client_name' 		=>	$client->fname.' '.$client->lname,
-							'client_id'			=>	$client->id,
+							'barber_name' 		=>	$barber->fname.' '.$barber->lname,
+							'barber_id'			=>	$barber->id,
 							'time' 				=>	$appointment->time,
 							'cancelled'			=>	(bool)$appointment->deleted,
 							'date'				=>	$date->date
 						]);
 					}
-
 					return Response::json([
-						'appointments' 			=> $clients
+						'appointments' 			=> $client_appointments
 					]);
 				}
+				return Response::json([
+					'message' 					=> $username, ' have no appointments.'
+				]);
 			}
 		}
 	}
@@ -80,22 +81,22 @@ class AppointmentsController extends \BaseController {
 		$login_id								=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$barber 							= Barber::where('login_id', '=', $login_id->first()->id);
+			$client 							= 	Client::where('login_id', '=', $login_id->first()->id);
 
-			if($barber->count()){
-				$barber 						= $barber->first();
-				$appointment 					= Appointment::where('id', '=', $appointmentId)
-															->where('barber_id', '=', $barber->id)->get();
+			if($client->count()){
+				$client 						= 	$client->first();
+				$appointment 					= 	Appointment::where('id', '=', $appointmentId)
+																->where('client_id', '=', $client->id)->get();
 				
 				if($appointment->count()){
-					$appointment 				= $appointment->first();
-					$client 					= Client::where('id', '=', $appointment->client_id)->get()->first();
-					$date 						= Date::where('id', '=', $appointment->date_id)->get()->first();
+					$appointment 				= 	$appointment->first();
+					$barber 					= 	Barber::where('id', '=', $appointment->barber_id)->get()->first();
+					$date 						= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 
 					return Response::json([
 						'appointment' 	=> [
-							'client_name' 		=>	$client->fname.' '.$client->lname,
-							'client_username'	=>	$client->id,
+							'barber_name' 		=>	$barber->fname.' '.$barber->lname,
+							'barber_id'			=>	$barber->id,
 							'canceled'			=>	(bool)$appointment->deleted,
 							'time' 				=>	$appointment->time,
 							'date'				=>	$date->date

@@ -1,7 +1,7 @@
 <?php
 use \HairConnect\Transformers\ClientsTransformer;
 
-class ClientsController extends UsersController {
+class ClientsController extends \BaseController {
 
 	/**
 	 * [$clientsTransformer description]
@@ -14,7 +14,7 @@ class ClientsController extends UsersController {
 	 * @param ClientsTransformer $clientsTransformer [description]
 	 */
 	function __construct(ClientsTransformer $clientsTransformer){
-		$this->clientsTransformer = $clientsTransformer;
+		$this->clientsTransformer 	= $clientsTransformer;
 	}
 
 	/**
@@ -24,9 +24,9 @@ class ClientsController extends UsersController {
 	 */
 	public function index()
 	{
-		$users = User::where('group', '=', 1)->get();
+		$users = Client::all();
         return Response::json([
-            'data' => $this->clientsTransformer->transformCollection($users->all())
+            'data' 					=> $this->clientsTransformer->transformCollection($users->all())
         ]);
 	}
 
@@ -38,17 +38,20 @@ class ClientsController extends UsersController {
 	 */
 	public function show($username)
 	{
-		$client = User::whereUsername($username)->where('active', '=', 1);
-		
-		if($client->count()){
-			return Response::json([
-				'details' 	=> 	$this->clientsTransformer->transform($client->first())
-			]);
-		}
+		$login_id					=	User::whereUsername($username)->get();
+		if($login_id->count()){
+			$client 				= 	Client::where('login_id', '=', $login_id->first()->id);
+
+			if($client->count()){
+				return Response::json([
+					'details'		=> 	$this->clientsTransformer->transform($client->first())
+				]);
+			}
+		}		
 
 		return Response::json([
 			'errors' => [
-				'message'	=>	'Client cannot be found or the account is deactivated.'
+				'message'			=>	'Client cannot be found or the account is deactivated.'
 			]
 		]);
 	}
@@ -62,30 +65,41 @@ class ClientsController extends UsersController {
 	public function update($username)
 	{
 		$validation = Validator::make(Input::all(), [
-			'fname'			=> 	'required|Alpha',
-			'lname'			=>	'required|Alpha',
-			'contact_no'	=>	'required|numeric',
-			'address'		=>	'required',
-			'email'			=>	'required|email'
+			'fname'					=> 	'required|Alpha',
+			'lname'					=>	'required|Alpha',
+			'contact_no'			=>	'required|numeric',
+			'address'				=>	'required',
+			'email'					=>	'required|email'
 		]);
 
 		if(!$validation->fails()){
-			$client = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 1)->get();
+			$login					=	User::whereUsername($username)->get();
+			
+			if($login->count()){
+				$login 				=	$login->first();
+				$client 			= 	Client::where('login_id', '=', $login->id)
+										->where('active', '=', 1)->get();	
+			}
 
 			if($client->count()){
-				$client = $client->first();
-				$client->fname = Input::get('fname');
-				$client->lname = Input::get('lname');
+				$client 			= $client->first();
+				$client->fname 		= Input::get('fname');
+				$client->lname 		= Input::get('lname');
 				$client->contact_no = Input::get('contact_no');
 				$client->address 	=	Input::get('address');
-				$client->email 		=	Input::get('email');
 				$client->save();
 
-				$client = User::whereUsername($username)->where('active', '=', 1)->where('group', '=', 1)->get();
+				if($email = Input::get('email')){
+					$login->email 	=	$email;
+					$login->save();
+				}
+				
+				$client 			= Client::where('login_id', '=', $login->id)
+											->where('active', '=', 1)->get();
 			
 				return Response::json([
-					'message'	=>	'Profile info have been updated.',
-					'data'		=>	$this->clientsTransformer->transform($client->first())
+					'message'		=>	'Profile info have been updated.',
+					'data'			=>	$this->clientsTransformer->transform($client->first())
 				]);
 			}
 		}
@@ -100,11 +114,31 @@ class ClientsController extends UsersController {
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int  $id
+	 * @param  string 	$username
 	 * @return Response
 	 */
-	public function destroy($id)
+	public function destroy($username)
 	{
-		//
+		$login						=	User::whereUsername($username)->get();
+		if($login->count()){
+			$client 				= Client::where('login_id', '=', $login->first()->id);
+
+			if($client->count()){
+				$client 			= $client->first();
+				$client->active		=	0;
+				$client->deleted	=	0;
+				$client->save();
+
+				return Response::json([
+					'message' 		=> 'Account has been successfully deactivated.',
+					'activate'		=>	(bool)$client->deleted
+				]);
+			}
+		}
+		return Response::json([
+			'error' => [
+				'message'			=>	'Client not registered or deactivated.'
+			]
+		]);
 	}
 }

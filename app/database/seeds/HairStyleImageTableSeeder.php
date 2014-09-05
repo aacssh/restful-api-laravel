@@ -8,12 +8,12 @@ class HairStyleImageTableSeeder extends Seeder {
     public function run()
     {
         $faker = Faker::create();
-        $barbersId = User::where('group', '=', 0)->lists('id');
+        $barbersId = Barber::lists('id');
 
         foreach(range(1, 10) as $index)
         {
-            DB::table('hair_style_images')->insertGetId([
-            	'barber_id' 	=> 	$faker->randomElement($barbersId),
+            HairStyleImages::create([
+            	'barber_id' 	=> 	$faker->unique()->randomElement($barbersId),
                 'image'     	=>	$faker->imageUrl(300, 200),
                 'image_title'	=>	$faker->sentence()
             ]);

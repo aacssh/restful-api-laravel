@@ -8,8 +8,8 @@ class AppointmentsTableSeeder extends Seeder {
     public function run()
     {
         $faker 		= Faker::create();
-        $barbersId 	= User::where('group', '=', 0)->lists('id');
-        $clientsId 	= User::where('group', '=', 1)->lists('id');
+        $barbersId 	= Barber::lists('id');
+        $clientsId 	= Client::lists('id');
         $datesId 	= DB::table('dates')->lists('id');
 
         foreach(range(1, 30) as $index)

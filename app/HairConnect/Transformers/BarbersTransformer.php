@@ -20,18 +20,18 @@ class BarbersTransformer extends Transformers{
      * @return array
      */
     public function transform($barber){
-        $mname = ($barber['mname'] !== '') ? ' '.$barber['mname'] : '';
+        $login_details  =   \User::find($barber['login_id']);
+
         return [
-            'username'      =>  $barber['username'],
-            'name'          =>  $barber['fname'].$mname.' '.$barber['lname'],
+            'username'      =>  $login_details->username,
+            'name'          =>  $barber['fname'].' '.$barber['lname'],
             'profile_image' =>  $barber['image'],
             'contact_no'    =>  $barber['contact_no'],
-            'email'         =>  $barber['email'],
+            'email'         =>  $login_details->email,
             'online'        =>  (boolean)$barber['active'],
             'activate'      =>  (boolean)$barber['deleted'],
-            'group'         =>  ($barber['group']) ? 'customer' : 'barber',
             'member_since'  =>  $barber['created_at'],
-            'resource_uri'	=>  \URL::to('/').'/barbers/'.$barber['username']
+            'resource_uri'	=>  \URL::to('/').'/barbers/'.$login_details->username
         ];
     }
 } 

@@ -11,18 +11,18 @@ class ClientsTransformer extends Transformers{
 	 */
 	public function transform($client)
 	{
-		$mname = ($client['mname'] !== '') ? ' '.$client['mname'] : '';
+		$login_details  =   \User::find($client['login_id']);
+        
         return [
-            'username'      =>  $client['username'],
-            'name'          =>  $client['fname'].$mname.' '.$client['lname'],
+            'username'      =>  $login_details->username,
+            'name'          =>  $client['fname'].' '.$client['lname'],
             'profile_image' =>  $client['image'],
             'contact_no'    =>  $client['contact_no'],
-            'email'         =>  $client['email'],
+            'email'         =>  $login_details->email,
             'online'        =>  (boolean)$client['active'],
             'activate'      =>  (boolean)$client['deleted'],
-            'group'         =>  ($client['group']) ? 'customer' : 'barber',
             'member_since'  =>  $client['created_at'],
-            'resource_uri'	=>  \URL::to('/').'/clients/'.$client['username']
+            'resource_uri'	=>  \URL::to('/').'/clients/'.$login_details->username
         ];
 	}
 }
