@@ -1,6 +1,20 @@
 <?php
+use \HairConnect\Transformers\ShiftsTransformer;
 
 class ShiftsController extends \BaseController {
+	/**
+	 * [$shiftsTransformer description]
+	 * @var [type]
+	 */
+	protected $shiftsTransformer;
+
+	/**
+	 * [__construct description]
+	 * @param [type] $shiftsTransformer [description]
+	 */
+	function __construct(ShiftsTransformer $shiftsTransformer){
+		$this->shiftsTransformer 	=	$shiftsTransformer;
+	}
 
 	/**
 	 * Display a listing of the resource.
@@ -9,21 +23,21 @@ class ShiftsController extends \BaseController {
 	 */
 	public function index($username)
 	{
-		$log		=	User::whereUsername($username)->get();
+		$log						=	User::whereUsername($username)->get();
 		if($log->count()){
-			$barber	=	Barber::where('login_id', '=', $log->first()->id)->get();
+			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
 			if($barber->count()){
-				$barber = $barber->first();
-				$shift 	= Shift::where('barber_id', '=', $barber->id)->get();
+				$barber 			= 	$barber->first();
+				$shift 				= 	Shift::where('barber_id', '=', $barber->id)->get();
 
 				if($shift->count()){
-					return $shift;
+					return Response::json([
+						'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
+					]);
 				}
 				
 			}
 		}
-
-		
 	}
 
 	/**
@@ -31,42 +45,93 @@ class ShiftsController extends \BaseController {
 	 *
 	 * @return Response
 	 */
-	public function store()
+	public function store($username)
 	{
-		//
+		$validator = Validator::make(Input::all(),[
+            'name'              =>  'required',
+            'username' 			=>  'required|max:20|min:2|unique:users',
+            'password' 			=>  'required|min:6',
+            'confirm_password' 	=>  'required|same:password',
+            'email' 			=>  'required|max:60|email|unique:users'
+        ]);
+
+        if(!$validator->fails()){
+        	$barber = Barber::whereUsername($username)->get();
+        	if($barber->count()){
+        		$shift 	=	new Shift;
+        		$shift->barber_id	=	$barber->first()->id;
+        		$shift->start_time 	=	Input::get('start_time');
+        		$shift->end_time	=	Input::get('end_time');
+        		$shift->time_gap	=	Input::get('time_gap');
+        		
+        		if($shift->save()){
+        			return Response::json([
+        				'data'	=>	[
+        					'message'		=>	'Shift has been created.',
+        					'shift_details'	=>	Shift::
+        				]
+        			]);
+        		}
+        	}
+        }
 	}
 
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int  $id
+	 * @param  string  $username
 	 * @return Response
 	 */
-	public function show($id)
+	public function show($username, $shiftId)
 	{
-		//
+		$log						=	User::whereUsername($username)->get();
+		if($log->count()){
+			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
+			if($barber->count()){
+				$barber 			= 	$barber->first();
+				$shift 				= 	Shift::find($shiftId)->where('barber_id', '=', $barber->id)->get();
+
+				if($shift->count()){
+					return Response::json([
+						'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
+					]);
+				}
+				
+			}
+		}
 	}
 
 	/**
 	 * Update the specified resource in storage.
 	 *
-	 * @param  int  $id
+	 * @param  string  $username
 	 * @return Response
 	 */
-	public function update($id)
+	public function update($username, $shiftId)
 	{
-		//
-	}
+		$log						=	User::whereUsername($username)->get();
+		if($log->count()){
+			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
+			if($barber->count()){
+				$barber 			= 	$barber->first();
+				$shift 				= 	Shift::find($shiftId)->where('barber_id', '=', $barber->id)->get();
 
-	/**
-	 * Remove the specified resource from storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function destroy($id)
-	{
-		//
-	}
+				if($shift->count()){
+					$shift 			= 	$shift->first();
+					$shift->deleted =	1;
+					$shift->save();
 
+					return Response::json([
+						'success'	=> [
+							'message'	=>	'Shift has been updated.',
+							'shifts'	=>	$this->shiftsTransformer->transform(
+								Shift::find($shiftId)->where('barber_id', '=', $barber->id)->get()->first()
+							)
+						]
+					]);
+				}
+				
+			}
+		}
+	}
 }
