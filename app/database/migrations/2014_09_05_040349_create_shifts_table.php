@@ -18,6 +18,7 @@ class CreateShiftsTable extends Migration {
             $table->time('start_time');
             $table->time('end_time');
             $table->integer('time_gap');
+            $table->integer('date_id');
             $table->boolean('deleted');
 			$table->timestamps();
         });

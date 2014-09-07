@@ -9,6 +9,7 @@ class ShiftsTableSeeder extends Seeder {
     {
         $faker = Faker::create();
         $barberIds	=	Barber::lists('id');
+        $dateIds    =   Date::lists('id');
 
         foreach(range(1, 10) as $index)
         {
@@ -17,9 +18,9 @@ class ShiftsTableSeeder extends Seeder {
             	'start_time'	=>	$faker->time(),
             	'end_time'		=>	$faker->time(),
             	'time_gap'		=>	20,
+                'date_id'       =>  $faker->randomElement($dateIds),
             	'deleted'		=>	$faker->boolean
             ]);
         }
     }
-
 }
