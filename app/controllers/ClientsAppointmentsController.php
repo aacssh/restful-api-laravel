@@ -64,9 +64,50 @@ class ClientsAppointmentsController extends \BaseController{
 	 *
 	 * @return Response
 	 */
-	public function store()
+	public function store($username)
 	{
-		//
+		$validator								=	Validator::make(Input::all(),[
+			'barber_id'							=>	'required',
+			'time'								=>	'required',
+			'date'								=>	'required'
+		]);
+
+		if(!$validator->fails()){
+			$client 							=	User::whereUsername($username)->get();
+			if($client->count()){
+				$client_id 						= 	Client::where('login_id', '=', $client->first()->id)->get();
+				if($client_id->count()){
+					$date 						=	Date::where('date', '=', Input::get('date'))->get();
+					$date_id					=	$date->first();
+					
+					$appointment 				=	new Appointment;
+					$appointment->barber_id 	=	Input::get('barber_id');
+					$appointment->time 			=	Input::get('time').':00';
+					$appointment->client_id 	=	$client_id->first()->id;
+					$appointment->deleted 		=	0;
+					$appointment->date_id 		=	$date_id->first()->id;
+					
+					if($appointment->save()){
+						return Response::json([
+							'success'			=>	[
+								'message'		=>	'Appointment has been booked in your name.'
+							]
+						]);
+					}
+				}
+			}
+			return Response::json([
+				'errors' 						=>	 [
+					'message'					=>	'Client does not exist or Appointment cannot be saved.'
+				]
+			]);
+		}
+	    return Response::json([
+			'errors' 							=> 	[
+				'message'						=>	'Validation failed.',
+				'errors_details'				=>	$validator->messages()
+			]
+		]);
 	}
 
 	/**
