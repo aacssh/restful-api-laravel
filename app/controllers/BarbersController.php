@@ -21,8 +21,8 @@ class BarbersController extends \BaseController {
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
 	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer){
-		$this->barbersTransformer 		=	$barbersTransformer;
-		$this->imagesTransformer 		=	$imagesTransformer;	 
+		$this->barbersTransformer 	=	$barbersTransformer;
+		$this->imagesTransformer 	=	$imagesTransformer;	 
 	}
 	
 	/**
@@ -32,9 +32,18 @@ class BarbersController extends \BaseController {
 	 */
 	public function index()
 	{
-        $barbers = Barber::all();
+		$limit		=	Input::get('limit') ?: 5;
+        $barbers 	= 	Barber::paginate($limit);
+        $total 		=	$barbers->getTotal();
         return Response::json([
-            'data' 						=> $this->barbersTransformer->transformCollection($barbers->all()),
+            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
+            'paginator'	=>	[
+            	'total_count'	=>	$total,	
+            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
+            	'current_page'	=>	$barbers->getCurrentPage(),
+            	'limit'			=>	(int)$limit,
+            	'prev'			=>	$barbers->getLastPage()
+            ]
         ]);
 	}
 

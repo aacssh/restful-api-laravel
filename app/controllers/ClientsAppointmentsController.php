@@ -24,20 +24,22 @@ class ClientsAppointmentsController extends \BaseController{
 	 */
 	public function index($username)
 	{
-		$login_id								=	User::whereUsername($username)->get();
+		$login_id	=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$client 							= 	Client::where('login_id', '=', $login_id->first()->id);
+			$client 	= 	Client::where('login_id', '=', $login_id->first()->id);
 
 			if($client->count()){
-				$client 						= 	$client->first();
-				$appointments 					= 	Appointment::where('client_id', '=', $client->id)->get();
+				$client 		= 	$client->first();
+				$limit			=	Input::get('limit') ?: 5;
+				$appointments 	= 	Appointment::where('client_id', '=', $client->id)->paginate($limit);
+				$total 			=	$appointments->getTotal();
 				
 				if($appointments->count()){
-					$client_appointments 				= 	[];
+					$client_appointments	=	[];
 					foreach ($appointments as $appointment) {
-						$barber 				= 	Barber::where('id', '=', $appointment->barber_id)->get()->first();
-						$date 					= 	Date::where('id', '=', $appointment->date_id)->get()->first();
+						$barber 	= 	Barber::where('id', '=', $appointment->barber_id)->get()->first();
+						$date 		= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 						
 						array_push($client_appointments,[
 							'appointment_id'	=>	$appointment->id,
@@ -48,8 +50,16 @@ class ClientsAppointmentsController extends \BaseController{
 							'date'				=>	$date->date
 						]);
 					}
+
 					return Response::json([
-						'appointments' 			=> $client_appointments
+						'appointments'	=> $client_appointments,
+			            'paginator'		=>	[
+			            	'total_count'	=>	$total,	
+			            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
+			            	'current_page'	=>	$appointments->getCurrentPage(),
+			            	'limit'			=>	(int)$limit,
+			            	'prev'			=>	$appointments->getLastPage()
+			            ]
 					]);
 				}
 				return Response::json([

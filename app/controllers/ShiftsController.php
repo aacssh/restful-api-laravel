@@ -165,6 +165,7 @@ class ShiftsController extends \BaseController {
 		]);
 	}
 
+	/*
 	public function destroy($username, $shiftId)
 	{
 		$log						=	User::whereUsername($username)->get();
@@ -191,4 +192,5 @@ class ShiftsController extends \BaseController {
 			}
 		}
 	}
+	*/
 }
