@@ -20,7 +20,7 @@ class BarbersTransformer extends Transformers{
      * @return array
      */
     public function transform($barber){
-        $login_details  =   \User::find($barber['login_id']);
+        $login_details  =   \User::find($barber['user_id']);
 
         return [
             'username'      =>  $login_details->username,
@@ -28,6 +28,7 @@ class BarbersTransformer extends Transformers{
             'profile_image' =>  $barber['image'],
             'contact_no'    =>  $barber['contact_no'],
             'email'         =>  $login_details->email,
+            'address'       =>  $barber['address'],
             'online'        =>  (boolean)$barber['active'],
             'activate'      =>  (boolean)$barber['deleted'],
             'member_since'  =>  $barber['created_at'],

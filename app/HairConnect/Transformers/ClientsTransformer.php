@@ -11,7 +11,7 @@ class ClientsTransformer extends Transformers{
 	 */
 	public function transform($client)
 	{
-		$login_details  =   \User::find($client['login_id']);
+		$login_details  =   \User::find($client['user_id']);
         
         return [
             'username'      =>  $login_details->username,

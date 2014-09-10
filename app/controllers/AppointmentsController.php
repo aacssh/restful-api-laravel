@@ -10,11 +10,18 @@ class AppointmentsController extends \BaseController {
 	protected $appointmentsTransformer;
 
 	/**
+	 * [$apiController description]
+	 * @var [type]
+	 */
+	protected $apiController;
+
+	/**
 	 * [__construct description]
 	 * @param AppointmentsTransformer $appointmentsTransformer [description]
 	 */
-	function __construct(AppointmentsTransformer $appointmentsTransformer){
-		$this->appointmentsTransformer = $appointmentsTransformer;
+	function __construct(AppointmentsTransformer $appointmentsTransformer, APIController $apiController){
+		$this->appointmentsTransformer 	= 	$appointmentsTransformer;
+		$this->apiController 			=	$apiController;
 	}
 
 	/**
@@ -25,20 +32,20 @@ class AppointmentsController extends \BaseController {
 	 */
 	public function index($username)
 	{
-		$login_id								=	User::whereUsername($username)->get();
+		$login_id	=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$barber 							= 	Barber::where('login_id', '=', $login_id->first()->id);
+			$barber	= 	Barber::where('login_id', '=', $login_id->first()->id);
 
 			if($barber->count()){
-				$barber 						= 	$barber->first();
-				$appointments 					= 	Appointment::where('barber_id', '=', $barber->id)->get();
+				$barber 		= 	$barber->first();
+				$appointments	= 	Appointment::where('barber_id', '=', $barber->id)->get();
 				
 				if($appointments->count()){
-					$clients 					= 	[];
+					$clients    = 	[];
 					foreach ($appointments as $appointment) {
-						$client 				= 	Client::where('id', '=', $appointment->client_id)->get()->first();
-						$date 					= 	Date::where('id', '=', $appointment->date_id)->get()->first();
+						$client = 	Client::where('id', '=', $appointment->client_id)->get()->first();
+						$date 	= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 						
 						array_push($clients,[
 							'appointment_id'	=>	$appointment->id,
@@ -50,8 +57,8 @@ class AppointmentsController extends \BaseController {
 						]);
 					}
 
-					return Response::json([
-						'appointments' 			=> $clients
+					return $this->apiController->respond([
+						'appointments' 	=> $clients
 					]);
 				}
 			}
@@ -67,22 +74,22 @@ class AppointmentsController extends \BaseController {
 	 */
 	public function show($username, $appointmentId)
 	{
-		$login_id								=	User::whereUsername($username)->get();
+		$login_id	=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$barber 							= Barber::where('login_id', '=', $login_id->first()->id);
+			$barber	= 	Barber::where('login_id', '=', $login_id->first()->id);
 
 			if($barber->count()){
-				$barber 						= $barber->first();
-				$appointment 					= Appointment::where('id', '=', $appointmentId)
+				$barber    		=	$barber->first();
+				$appointment    =	Appointment::where('id', '=', $appointmentId)
 															->where('barber_id', '=', $barber->id)->get();
 				
 				if($appointment->count()){
-					$appointment 				= $appointment->first();
-					$client 					= Client::where('id', '=', $appointment->client_id)->get()->first();
-					$date 						= Date::where('id', '=', $appointment->date_id)->get()->first();
+					$appointment	=	$appointment->first();
+					$client 		= 	Client::where('id', '=', $appointment->client_id)->get()->first();
+					$date 			= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 
-					return Response::json([
+					return $this->apiController->respond([
 						'appointment' 	=> [
 							'client_name' 		=>	$client->fname.' '.$client->lname,
 							'client_username'	=>	$client->id,
@@ -92,11 +99,7 @@ class AppointmentsController extends \BaseController {
 						]
 					]);
 				}
-				return Response::json([
-					'error' => [
-						'message'				=>	'Appointment is not found or cancelled or expired.'
-					]
-				]);
+				return $this->apiController->respondNotFound('Appointment is not found or cancelled or expired.');
 			}
 		}
 	}
@@ -109,38 +112,29 @@ class AppointmentsController extends \BaseController {
 	 */
 	public function destroy($username, $appointmentId)
 	{
-		$login_id							=	User::whereUsername($username)->get();
+		$login_id	=	User::whereUsername($username)->get();
 		
 		if($login_id->count()){
-			$barber 						= Barber::where('login_id', '=', $login_id->first()->id);
+			$barber = 	Barber::where('login_id', '=', $login_id->first()->id);
 
 			if($barber->count()){
-				$barber 					= $barber->first();
-				$appointment 				= Appointment::where('id', '=', $appointmentId)
-														->where('barber_id', '=', $barber->id)
-														->where('deleted', '=', 0)->get();
+				$barber    		=	$barber->first();
+				$appointment    = 	Appointment::where('id', '=', $appointmentId)
+										->where('barber_id', '=', $barber->id)->where('deleted', '=', 0)->get();
 
 				if($appointment->count()){
 					$appointment 			= $appointment->first();
 					$appointment->deleted 	= 1;
 					$appointment->save();
 
-					return Response::json([
-						'message' 			=> 'Appointment has been successfully cancelled.',
-						'cancelled'			=>	(bool)$appointment->deleted
+					return $this->apiController->respond([
+						'message' 	=>	'Appointment has been successfully cancelled.',
+						'cancelled'	=>	(bool)$appointment->deleted
 					]);
 				}
-				return Response::json([
-					'error' => [
-						'message'			=>	'Appointment not found or already cancelled.'
-					]
-				]);
+				return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
 			}
 		}
-		return Response::json([
-			'error' => [
-				'message'					=>	'Barber does not exist.'
-			]
-		]);
+		return $this->apiController->respondNotFound('Barber does not exist.');
 	}
 }

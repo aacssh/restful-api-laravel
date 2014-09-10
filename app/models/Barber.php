@@ -7,4 +7,9 @@ class Barber extends \Eloquent {
 
     protected $table	=	'barbers';
 
+    public function user()
+    {
+    	return $this->belongsTo('User');
+    }
+
 }

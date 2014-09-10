@@ -16,19 +16,6 @@ class UsersController extends \BaseController {
     }
 
 	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
-	public function index()
-	{
-        $users = User::all();
-        return Response::json([
-           'data' => $this->usersTransformer->transformCollection($users->all())
-        ]);
-	}
-
-	/**
 	 * Store a newly created resource in storage.
 	 *
 	 * @return Response

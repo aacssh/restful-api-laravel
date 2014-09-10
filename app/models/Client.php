@@ -6,4 +6,9 @@ class Client extends \Eloquent {
     ];
 
     protected $table	=	'clients';
+
+    public function user()
+    {
+    	return $this->belongsTo('User');
+    }
 }

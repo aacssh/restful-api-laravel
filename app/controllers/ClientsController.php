@@ -10,11 +10,18 @@ class ClientsController extends \BaseController {
 	protected $clientsTransformer;
 
 	/**
+	 * [$apiController description]
+	 * @var [type]
+	 */
+	protected $apiController;
+
+	/**
 	 * [__construct description]
 	 * @param ClientsTransformer $clientsTransformer [description]
 	 */
-	function __construct(ClientsTransformer $clientsTransformer){
-		$this->clientsTransformer 	= $clientsTransformer;
+	function __construct(ClientsTransformer $clientsTransformer, APIController $apiController){
+		$this->clientsTransformer 	= 	$clientsTransformer;
+		$this->apiController 		=	$apiController;
 	}
 
 	/**
@@ -25,8 +32,8 @@ class ClientsController extends \BaseController {
 	public function index()
 	{
 		$users = Client::all();
-        return Response::json([
-            'data' 					=> $this->clientsTransformer->transformCollection($users->all())
+        return $this->apiController->respond([
+            'data' 	=>	$this->clientsTransformer->transformCollection($users->all())
         ]);
 	}
 
@@ -38,22 +45,14 @@ class ClientsController extends \BaseController {
 	 */
 	public function show($username)
 	{
-		$login_id					=	User::whereUsername($username)->get();
-		if($login_id->count()){
-			$client 				= 	Client::where('login_id', '=', $login_id->first()->id);
+		$client 	=	User::findByUsernameOrFail($username)->client;
+		if($client->count()){
+			return $this->apiController->respond([
+				'details'	=> 	$this->clientsTransformer->transform($client)
+			]);
+		}
 
-			if($client->count()){
-				return Response::json([
-					'details'		=> 	$this->clientsTransformer->transform($client->first())
-				]);
-			}
-		}		
-
-		return Response::json([
-			'errors' => [
-				'message'			=>	'Client cannot be found or the account is deactivated.'
-			]
-		]);
+		return $this->apiController->respondNotFound('Client cannot be found or the account is deactivated.');
 	}
 
 	/**
@@ -65,50 +64,34 @@ class ClientsController extends \BaseController {
 	public function update($username)
 	{
 		$validation = Validator::make(Input::all(), [
-			'fname'					=> 	'required|Alpha',
-			'lname'					=>	'required|Alpha',
-			'contact_no'			=>	'required|numeric',
-			'address'				=>	'required',
-			'email'					=>	'required|email'
+			'fname'			=> 	'required|Alpha',
+			'lname'			=>	'required|Alpha',
+			'contact_no'	=>	'required|numeric',
+			'address'		=>	'required',
+			'email'			=>	'required|email'
 		]);
 
 		if(!$validation->fails()){
-			$login					=	User::whereUsername($username)->get();
-			
-			if($login->count()){
-				$login 				=	$login->first();
-				$client 			= 	Client::where('login_id', '=', $login->id)
-										->where('active', '=', 1)->get();	
-			}
+			$user 	 	=	User::findByUsernameOrFail($username);
+			$client 	=	$user->client;
 
 			if($client->count()){
-				$client 			= $client->first();
 				$client->fname 		= Input::get('fname');
 				$client->lname 		= Input::get('lname');
 				$client->contact_no = Input::get('contact_no');
 				$client->address 	=	Input::get('address');
 				$client->save();
 
-				if($email = Input::get('email')){
-					$login->email 	=	$email;
-					$login->save();
-				}
-				
-				$client 			= Client::where('login_id', '=', $login->id)
-											->where('active', '=', 1)->get();
+				$user->email 		=	Input::get('email');
+				$user->save();
 			
-				return Response::json([
-					'message'		=>	'Profile info have been updated.',
-					'data'			=>	$this->clientsTransformer->transform($client->first())
+				return $this->apiController->respond([
+					'message'	=>	'Profile info have been updated.',
+					'data'		=>	$this->clientsTransformer->transform($client)
 				]);
 			}
 		}
-		return Response::json([
-			'errors' => [
-				'message'			=>	'Profile info cannot be updated.',
-				'errors_details'	=>	$validation->messages()
-			]
-		]);
+		return $this->apiController->respondNotFound($validation->messages());
 	}
 
 	/**
@@ -119,26 +102,18 @@ class ClientsController extends \BaseController {
 	 */
 	public function destroy($username)
 	{
-		$login						=	User::whereUsername($username)->get();
-		if($login->count()){
-			$client 				= Client::where('login_id', '=', $login->first()->id);
+		$user 	   =	User::findByUsernameOrFail($username);
+		$client    =	$user->client;
+		if($client->count()){
+			$client->active		=	0;
+			$client->deleted	=	0;
+			$client->save();
 
-			if($client->count()){
-				$client 			= $client->first();
-				$client->active		=	0;
-				$client->deleted	=	0;
-				$client->save();
-
-				return Response::json([
-					'message' 		=> 'Account has been successfully deactivated.',
-					'activate'		=>	(bool)$client->deleted
-				]);
-			}
+			return $this->apiController->respond([
+				'message' 	=> 'Account has been successfully deactivated.',
+				'activate'	=>	(bool)$client->deleted
+			]);
 		}
-		return Response::json([
-			'error' => [
-				'message'			=>	'Client not registered or deactivated.'
-			]
-		]);
+		return $this->apiController->respondNotFound('Client not registered or deactivated.');
 	}
 }

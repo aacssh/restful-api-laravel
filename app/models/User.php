@@ -31,8 +31,32 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 */
 	protected $hidden = array('password', 'remember_token');
 
-	public function appointment(){
-		return $this->hasMany('Appointment');
+	/**
+     * Find by username, or throw an exception.
+     *
+     * @param string $username The username.
+     * @param mixed $columns The columns to return.
+     *
+     * @throws ModelNotFoundException if no matching User exists.
+     *
+     * @return User
+     */
+    public static function findByUsernameOrFail($username, $columns = array('*'))
+    {
+        if ( ! is_null($user = static::whereUsername($username)->first($columns))) {
+            return $user;
+        }
+
+        throw new ModelNotFoundException;
+    }
+
+	public function barber()
+	{
+		return $this->hasOne('Barber');
 	}
 
+	public function client()
+	{
+		return $this->hasOne('Client');
+	}
 }

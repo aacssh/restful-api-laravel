@@ -9,11 +9,18 @@ class ShiftsController extends \BaseController {
 	protected $shiftsTransformer;
 
 	/**
+	 * [$apiController description]
+	 * @var [type]
+	 */
+	protected $apiController;
+
+	/**
 	 * [__construct description]
 	 * @param [type] $shiftsTransformer [description]
 	 */
-	function __construct(ShiftsTransformer $shiftsTransformer){
+	function __construct(ShiftsTransformer $shiftsTransformer, APIController $apiController){
 		$this->shiftsTransformer 	=	$shiftsTransformer;
+		$this->apiController 		=	$apiController;
 	}
 
 	/**
@@ -23,19 +30,18 @@ class ShiftsController extends \BaseController {
 	 */
 	public function index($username)
 	{
-		$log						=	User::whereUsername($username)->get();
+		$log	=	User::whereUsername($username)->get();
 		if($log->count()){
-			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
+			$barber	   =	Barber::where('login_id', '=', $log->first()->id)->get();
 			if($barber->count()){
-				$barber 			= 	$barber->first();
-				$shift 				= 	Shift::where('barber_id', '=', $barber->id)->get();
+				$barber    =	$barber->first();
+				$shift 	   = 	Shift::where('barber_id', '=', $barber->id)->get();
 
 				if($shift->count()){
-					return Response::json([
+					return $this->apiController->respond([
 						'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
 					]);
 				}
-				
 			}
 		}
 	}
@@ -57,8 +63,8 @@ class ShiftsController extends \BaseController {
         if(!$validator->fails()){
         	$user = User::whereUsername($username)->get();
         	if($user->count()){
-        		$barber 	=	Barber::where('login_id', '=', $user->first()->id)->get();
-        		$date		=	Date::where('date', '=', Input::get('date'))->get();
+        		$barber    =	Barber::where('login_id', '=', $user->first()->id)->get();
+        		$date	   =	Date::where('date', '=', Input::get('date'))->get();
 
         		$shift 	=	new Shift;
         		$shift->barber_id	=	$barber->first()->id;
@@ -68,25 +74,14 @@ class ShiftsController extends \BaseController {
         		$shift->date_id 	=	$date->first()->id;
         		
         		if($shift->save()){
-        			return Response::json([
-        				'data'	=>	[
-        					'message'		=>	'Shift has been successfully created.'
-        				]
+        			return $this->apiController->respond([
+        				'message'	=>	'Shift has been successfully created.'
         			]);
         		}
         	}
-        	return Response::json([
-				'errors' => [
-					'message'				=>	'Barber does not exist or Shift cannot be saved.'
-				]
-			]);
+        	return $this->apiController->respondNotFound('Barber does not exist or Shift cannot be saved.');
         }
-        return Response::json([
-			'errors' => [
-				'message'				=>	'Shift cannot be stored.',
-				'errors_details'		=>	$validator->messages()
-			]
-		]);
+        return $this->apiController->respondInvalidParameters($validator->messages());
 	}
 
 	/**
@@ -97,15 +92,15 @@ class ShiftsController extends \BaseController {
 	 */
 	public function show($username, $shiftId)
 	{
-		$log						=	User::whereUsername($username)->get();
+		$log	=	User::whereUsername($username)->get();
 		if($log->count()){
-			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
+			$barber	=	Barber::where('login_id', '=', $log->first()->id)->get();
 			if($barber->count()){
-				$barber 			= 	$barber->first();
-				$shift 				= 	Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
+				$barber	  =    $barber->first();
+				$shift 	  =    Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
 
 				if($shift->count()){
-					return Response::json([
+					return $this->apiController->respond([
 						'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
 					]);
 				}
@@ -132,8 +127,8 @@ class ShiftsController extends \BaseController {
         if(!$validator->fails()){
         	$user = User::whereUsername($username)->get();
         	if($user->count()){
-        		$barber 	=	Barber::where('login_id', '=', $user->first()->id)->get();
-        		$date		=	Date::where('date', '=', Input::get('date'))->get();
+        		$barber    	=	Barber::where('login_id', '=', $user->first()->id)->get();
+        		$date	   	=	Date::where('date', '=', Input::get('date'))->get();
 
         		$shift 		=	Shift::find($shiftId);
         		
@@ -144,53 +139,13 @@ class ShiftsController extends \BaseController {
         		$shift->date_id 	=	$date->first()->id;
         		
         		if($shift->save()){
-        			return Response::json([
-        				'data'	=>	[
-        					'message'		=>	'Shift has been successfully updated.'
-        				]
+        			return $this->apiController->respond([
+        				'message'		=>	'Shift has been successfully updated.'
         			]);
         		}
         	}
-        	return Response::json([
-				'errors' => [
-					'message'				=>	'Barber does not exist or Shift cannot be udated.'
-				]
-			]);
+        	return $this->apiController->respondNotFound('Barber does not exist or Shift cannot be udated.');
         }
-        return Response::json([
-			'errors' => [
-				'message'				=>	'Validation failed.',
-				'errors_details'		=>	$validator->messages()
-			]
-		]);
+        return $this->apiController->respondInvalidParameters($validator->messages());
 	}
-
-	/*
-	public function destroy($username, $shiftId)
-	{
-		$log						=	User::whereUsername($username)->get();
-		if($log->count()){
-			$barber					=	Barber::where('login_id', '=', $log->first()->id)->get();
-			if($barber->count()){
-				$barber 			= 	$barber->first();
-				$shift 				= 	Shift::find($shiftId)->where('barber_id', '=', $barber->id)->get();
-
-				if($shift->count()){
-					$shift 			= 	$shift->first();
-					$shift->deleted =	1;
-					$shift->save();
-
-					return Response::json([
-						'success'	=> [
-							'message'	=>	'Shift has been updated.',
-							'shifts'	=>	$this->shiftsTransformer->transform(
-								Shift::find($shiftId)->where('barber_id', '=', $barber->id)->get()->first()
-							)
-						]
-					]);
-				}
-			}
-		}
-	}
-	*/
 }

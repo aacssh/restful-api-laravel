@@ -17,12 +17,19 @@ class BarbersController extends \BaseController {
 	protected $imagesTransformer;
 
 	/**
+	 * [$apiController description]
+	 * @var [type]
+	 */
+	protected $apiController;
+
+	/**
 	 * [__construct description]
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
-	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer){
+	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController){
 		$this->barbersTransformer 	=	$barbersTransformer;
-		$this->imagesTransformer 	=	$imagesTransformer;	 
+		$this->imagesTransformer 	=	$imagesTransformer;
+		$this->apiController 		=	$apiController;
 	}
 	
 	/**
@@ -35,7 +42,7 @@ class BarbersController extends \BaseController {
 		$limit		=	Input::get('limit') ?: 5;
         $barbers 	= 	Barber::paginate($limit);
         $total 		=	$barbers->getTotal();
-        return Response::json([
+        return $this->apiController->respond([
             'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
             'paginator'	=>	[
             	'total_count'	=>	$total,	
@@ -55,26 +62,18 @@ class BarbersController extends \BaseController {
 	 */
 	public function show($username)
 	{
-		$login_id						=	User::whereUsername($username)->get();
-		if($login_id->count()){
-			$barber 					= 	Barber::where('login_id', '=', $login_id->first()->id);
+		$barber	   =	User::findByUsernameOrFail($username)->barber;
+		if($barber->count()){
+			$hsi	= 	HairStyleImages::where('barber_id', '=', $barber->id)->get();
 
-			if($barber->count()){
-				$hsi 					= 	HairStyleImages::where('barber_id', '=', $barber->first()->id)->get();
-				
-				return Response::json([
-					'details' 			=> 	$this->barbersTransformer->transform($barber->first()),
-					'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
-				]);
-			}
-		}		
+			return $this->apiController->respond([
+				'details' 			=> 	$this->barbersTransformer->transform($barber),
+				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
+			]);
+		}
 		//$barber = User::whereUsername($username)->where('group', '=', 0)->where('active', '=', 1);
 
-		return Response::json([
-			'errors' => [
-				'message'				=>	'Barber cannot be found or the account is deactivated.'
-			]
-		]);
+		return $this->apiController->respondNotFound('Barber cannot be found or the account is deactivated.');
 	}
 
 	/**
@@ -86,50 +85,34 @@ class BarbersController extends \BaseController {
 	public function update($username)
 	{
 		$validation = Validator::make(Input::all(), [
-			'fname'						=> 	'required|Alpha',
-			'lname'						=>	'required|Alpha',
-			'contact_no'				=>	'required|numeric',
-			'address'					=>	'required',
-			'email'						=>	'required|email'
+			'fname'			=> 	'required|Alpha',
+			'lname'			=>	'required|Alpha',
+			'contact_no'	=>	'required|numeric',
+			'address'		=>	'required',
+			'email'			=>	'required|email'
 		]);
 
 		if(!$validation->fails()){
-			$login						=	User::whereUsername($username)->get();
-			
-			if($login->count()){
-				$login 					=	$login->first();
-				$barber 				= 	Barber::where('login_id', '=', $login->id)
-													->where('active', '=', 1)->get();	
-			}
+			$user	=	User::findByUsernameOrFail($username);
+			$barber =	$user->barber;
 
 			if($barber->count()){
-				$barber 				= $barber->first();
-				$barber->fname 			= Input::get('fname');
-				$barber->lname 			= Input::get('lname');
-				$barber->contact_no 	= Input::get('contact_no');
-				$barber->address 		=	Input::get('address');
+				$barber->fname 		= 	Input::get('fname');
+				$barber->lname 		= 	Input::get('lname');
+				$barber->contact_no = 	Input::get('contact_no');
+				$barber->address 	=	Input::get('address');
 				$barber->save();
 
-				if($email = Input::get('email')){
-					$login->email 		=	$email;
-					$login->save();
-				}
-				
-				$barber 				= Barber::where('login_id', '=', $login->id)
-												->where('active', '=', 1)->get();
+				$user->email 		=	Input::get('email');
+				$user->save();
 			
-				return Response::json([
-					'message'			=>	'Profile info have been updated.',
-					'data'				=>	$this->barbersTransformer->transform($barber->first())
+				return $this->apiController->respond([
+					'message'	=>	'Profile info have been updated.',
+					'data'		=>	$this->barbersTransformer->transform($barber)
 				]);
 			}
 		}
-		return Response::json([
-			'errors' => [
-				'message'				=>	'Profile info cannot be updated.',
-				'errors_details'		=>	$validation->messages()
-			]
-		]);
+		return $this->apiController->respondInvalidParameters($validation->messages());
 	}
 
 	/**
@@ -140,26 +123,17 @@ class BarbersController extends \BaseController {
 	 */
 	public function destroy($username)
 	{
-		$login							=	User::whereUsername($username)->get();
-		if($login->count()){
-			$barber 					= 	Barber::where('login_id', '=', $login->first()->id);
+		$barber    =    User::findByUsernameOrFail($username)->barber;
+		if($barber->count()){
+			$barber->active		=	0;
+			$barber->deleted	=	0;
+			$barber->save();
 
-			if($barber->count()){
-				$barber 				= 	$barber->first();
-				$barber->active			=	0;
-				$barber->deleted		=	0;
-				$barber->save();
-
-				return Response::json([
-					'message' 			=> 'Account has been successfully deactivated.',
-					'activate'			=>	(bool)$barber->deleted
-				]);
-			}
+			return $this->apiController->respond([
+				'message' 	=> 'Account has been successfully deactivated.',
+				'activate'	=>	(bool)$barber->deleted
+			]);
 		}
-		return Response::json([
-			'error' => [
-				'message'				=>	'Barber not registered or deactivated.'
-			]
-		]);
+		return $this->apiController->respondNotFound('Barber not registered or deactivated.');
 	}
 }
