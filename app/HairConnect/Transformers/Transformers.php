@@ -11,7 +11,6 @@ abstract class Transformers{
         return array_map([$this, 'transform'], $items);
     }
 
-
     /**
      * @param $items
      * @return mixed

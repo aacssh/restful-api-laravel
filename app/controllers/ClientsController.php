@@ -29,7 +29,7 @@ class ClientsController extends \BaseController {
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index($barber = null)
 	{
 		$users = Client::all();
         return $this->apiController->respond([
