@@ -1,6 +1,8 @@
 <?php
 use \HairConnect\Transformers\BarbersTransformer;
 use \HairConnect\Transformers\ImagesTransformer;
+use \HairConnect\Services\BarberService;
+use \HairConnect\Validators\ValidationException;
 
 class BarbersController extends \BaseController {
 
@@ -23,13 +25,20 @@ class BarbersController extends \BaseController {
 	protected $apiController;
 
 	/**
+	 * [$barberService description]
+	 * @var [type]
+	 */
+	protected $barberService;
+
+	/**
 	 * [__construct description]
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
-	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController){
+	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController, BarberService $barberService){
 		$this->barbersTransformer 	=	$barbersTransformer;
 		$this->imagesTransformer 	=	$imagesTransformer;
 		$this->apiController 		=	$apiController;
+		$this->barberService 		=	$barberService;
 	}
 	
 	/**
@@ -84,35 +93,16 @@ class BarbersController extends \BaseController {
 	 */
 	public function update($username)
 	{
-		$validation = Validator::make(Input::all(), [
-			'fname'			=> 	'required|Alpha',
-			'lname'			=>	'required|Alpha',
-			'contact_no'	=>	'required|numeric',
-			'address'		=>	'required',
-			'email'			=>	'required|email'
-		]);
+		try{
+			$barberDetails = $this->barberService->update($username, Input::all());
 
-		if(!$validation->fails()){
-			$user	=	User::findByUsernameOrFail($username);
-			$barber =	$user->barber;
-
-			if($barber->count()){
-				$barber->fname 		= 	Input::get('fname');
-				$barber->lname 		= 	Input::get('lname');
-				$barber->contact_no = 	Input::get('contact_no');
-				$barber->address 	=	Input::get('address');
-				$barber->save();
-
-				$user->email 		=	Input::get('email');
-				$user->save();
-			
-				return $this->apiController->respond([
-					'message'	=>	'Profile info have been updated.',
-					'data'		=>	$this->barbersTransformer->transform($barber)
-				]);
-			}
+			return $this->apiController->respond([
+				'message'	=>	'Profile info have been updated.',
+				'data'		=>	$this->barbersTransformer->transform($barberDetails)
+			]);
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());
 		}
-		return $this->apiController->respondInvalidParameters($validation->messages());
 	}
 
 	/**

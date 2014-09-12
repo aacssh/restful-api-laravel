@@ -39,15 +39,17 @@ class AppointmentsController extends \BaseController {
 
 			if($barber->count()){
 				$barber 		= 	$barber->first();
-				$appointments	= 	Appointment::where('barber_id', '=', $barber->id)->get();
+				$limit			=	Input::get('limit') ?: 5;
+				$appointments	= 	Appointment::where('barber_id', '=', $barber->id)->paginate($limit);
+				$total 			=	$appointments->getTotal();
 				
 				if($appointments->count()){
-					$clients    = 	[];
+					$client_appointments   = 	[];
 					foreach ($appointments as $appointment) {
 						$client = 	Client::where('id', '=', $appointment->client_id)->get()->first();
 						$date 	= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 						
-						array_push($clients,[
+						array_push($client_appointments,[
 							'appointment_id'	=>	$appointment->id,
 							'client_name' 		=>	$client->fname.' '.$client->lname,
 							'client_id'			=>	$client->id,
@@ -58,7 +60,14 @@ class AppointmentsController extends \BaseController {
 					}
 
 					return $this->apiController->respond([
-						'appointments' 	=> $clients
+						'appointments' 	=> $client_appointments,
+			            'paginator'		=>	[
+			            	'total_count'	=>	$total,	
+			            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
+			            	'current_page'	=>	$appointments->getCurrentPage(),
+			            	'limit'			=>	(int)$limit,
+			            	'prev'			=>	$appointments->getLastPage()
+			            ]
 					]);
 				}
 			}

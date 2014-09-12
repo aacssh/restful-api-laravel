@@ -14,7 +14,7 @@ class CreateBarbersTable extends Migration {
 	{
         Schema::create('barbers', function(Blueprint $table) {
             $table->increments('id');
-            $table->integer('login_id');
+            $table->integer('user_id');
             $table->string('fname', 100);
 			$table->string('lname', 100);
 			$table->binary('image');

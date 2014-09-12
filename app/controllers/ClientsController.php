@@ -1,5 +1,7 @@
 <?php
 use \HairConnect\Transformers\ClientsTransformer;
+use \HairConnect\Services\ClientService;
+use \HairConnect\Validators\ValidationException;
 
 class ClientsController extends \BaseController {
 
@@ -16,12 +18,19 @@ class ClientsController extends \BaseController {
 	protected $apiController;
 
 	/**
+	 * [$clientService description]
+	 * @var [type]
+	 */
+	protected $clientService;	
+
+	/**
 	 * [__construct description]
 	 * @param ClientsTransformer $clientsTransformer [description]
 	 */
-	function __construct(ClientsTransformer $clientsTransformer, APIController $apiController){
+	function __construct(ClientsTransformer $clientsTransformer, APIController $apiController, ClientService $clientService){
 		$this->clientsTransformer 	= 	$clientsTransformer;
 		$this->apiController 		=	$apiController;
+		$this->clientService 		=	$clientService;
 	}
 
 	/**
@@ -45,7 +54,7 @@ class ClientsController extends \BaseController {
 	 */
 	public function show($username)
 	{
-		$client 	=	User::findByUsernameOrFail($username)->client;
+		$client = User::findByUsernameOrFail($username)->client;
 		if($client->count()){
 			return $this->apiController->respond([
 				'details'	=> 	$this->clientsTransformer->transform($client)
@@ -63,35 +72,16 @@ class ClientsController extends \BaseController {
 	 */
 	public function update($username)
 	{
-		$validation = Validator::make(Input::all(), [
-			'fname'			=> 	'required|Alpha',
-			'lname'			=>	'required|Alpha',
-			'contact_no'	=>	'required|numeric',
-			'address'		=>	'required',
-			'email'			=>	'required|email'
-		]);
+		try{
+			$client = $this->clientService->update($username, Input::all());
 
-		if(!$validation->fails()){
-			$user 	 	=	User::findByUsernameOrFail($username);
-			$client 	=	$user->client;
-
-			if($client->count()){
-				$client->fname 		= Input::get('fname');
-				$client->lname 		= Input::get('lname');
-				$client->contact_no = Input::get('contact_no');
-				$client->address 	=	Input::get('address');
-				$client->save();
-
-				$user->email 		=	Input::get('email');
-				$user->save();
-			
-				return $this->apiController->respond([
-					'message'	=>	'Profile info have been updated.',
-					'data'		=>	$this->clientsTransformer->transform($client)
-				]);
-			}
+			return $this->apiController->respond([
+				'message'	=>	'Profile info have been updated.',
+				'data'		=>	$this->clientsTransformer->transform($client)
+			]);
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());
 		}
-		return $this->apiController->respondNotFound($validation->messages());
 	}
 
 	/**

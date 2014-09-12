@@ -1,5 +1,7 @@
 <?php
 use \HairConnect\Transformers\ShiftsTransformer;
+use \HairConnect\Services\ShiftCreatorService;
+use \HairConnect\Validators\ValidationException;
 
 class ShiftsController extends \BaseController {
 	/**
@@ -15,12 +17,19 @@ class ShiftsController extends \BaseController {
 	protected $apiController;
 
 	/**
+	 * [$shiftCreator description]
+	 * @var [type]
+	 */
+	protected $shiftCreator;
+
+	/**
 	 * [__construct description]
 	 * @param [type] $shiftsTransformer [description]
 	 */
-	function __construct(ShiftsTransformer $shiftsTransformer, APIController $apiController){
+	function __construct(ShiftsTransformer $shiftsTransformer, APIController $apiController, ShiftCreatorService $shiftCreator){
 		$this->shiftsTransformer 	=	$shiftsTransformer;
 		$this->apiController 		=	$apiController;
+		$this->shiftCreator 		=	$shiftCreator;
 	}
 
 	/**
@@ -32,7 +41,7 @@ class ShiftsController extends \BaseController {
 	{
 		$log	=	User::whereUsername($username)->get();
 		if($log->count()){
-			$barber	   =	Barber::where('login_id', '=', $log->first()->id)->get();
+			$barber	   =	Barber::where('user_id', '=', $log->first()->id)->get();
 			if($barber->count()){
 				$barber    =	$barber->first();
 				$shift 	   = 	Shift::where('barber_id', '=', $barber->id)->get();
@@ -53,35 +62,15 @@ class ShiftsController extends \BaseController {
 	 */
 	public function store($username)
 	{
-		$validator = Validator::make(Input::all(),[
-            'start_time'    =>  'required',
-            'end_time' 		=>  'required',
-            'time_gap' 		=>  'required',
-            'date' 			=>  'required'
-        ]);
+		try{
+			$this->shiftCreator->make($username, Input::all());
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());	
+		}
 
-        if(!$validator->fails()){
-        	$user = User::whereUsername($username)->get();
-        	if($user->count()){
-        		$barber    =	Barber::where('login_id', '=', $user->first()->id)->get();
-        		$date	   =	Date::where('date', '=', Input::get('date'))->get();
-
-        		$shift 	=	new Shift;
-        		$shift->barber_id	=	$barber->first()->id;
-        		$shift->start_time 	=	Input::get('start_time').':00:00';
-        		$shift->end_time	=	Input::get('end_time').':00:00';
-        		$shift->time_gap	=	(int)Input::get('time_gap');
-        		$shift->date_id 	=	$date->first()->id;
-        		
-        		if($shift->save()){
-        			return $this->apiController->respond([
-        				'message'	=>	'Shift has been successfully created.'
-        			]);
-        		}
-        	}
-        	return $this->apiController->respondNotFound('Barber does not exist or Shift cannot be saved.');
-        }
-        return $this->apiController->respondInvalidParameters($validator->messages());
+		return $this->apiController->respond([
+			'message'	=>	'Shift has been successfully created.'
+		]);
 	}
 
 	/**
@@ -92,20 +81,17 @@ class ShiftsController extends \BaseController {
 	 */
 	public function show($username, $shiftId)
 	{
-		$log	=	User::whereUsername($username)->get();
-		if($log->count()){
-			$barber	=	Barber::where('login_id', '=', $log->first()->id)->get();
-			if($barber->count()){
-				$barber	  =    $barber->first();
-				$shift 	  =    Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
+		$barber = User::findByUsernameOrFail($username)->barber;
+		
+		if($barber->count()){
+			$shift = Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
 
-				if($shift->count()){
-					return $this->apiController->respond([
-						'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
-					]);
-				}
-				
+			if($shift->count()){
+				return $this->apiController->respond([
+					'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
+				]);
 			}
+			return $this->apiController->respondNotFound('Shift does not exist.');
 		}
 	}
 
@@ -117,35 +103,15 @@ class ShiftsController extends \BaseController {
 	 */
 	public function update($username, $shiftId)
 	{
-		$validator = Validator::make(Input::all(),[
-            'start_time'    =>  'required',
-            'end_time' 		=>  'required',
-            'time_gap' 		=>  'required',
-            'date' 			=>  'required'
-        ]);
+		try{
+			$shift = $this->shiftCreator->update($username, $shiftId, Input::all());
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());	
+		}
 
-        if(!$validator->fails()){
-        	$user = User::whereUsername($username)->get();
-        	if($user->count()){
-        		$barber    	=	Barber::where('login_id', '=', $user->first()->id)->get();
-        		$date	   	=	Date::where('date', '=', Input::get('date'))->get();
-
-        		$shift 		=	Shift::find($shiftId);
-        		
-        		$shift->barber_id	=	$barber->first()->id;
-        		$shift->start_time 	=	Input::get('start_time').':00:00';
-        		$shift->end_time	=	Input::get('end_time').':00:00';
-        		$shift->time_gap	=	(int)Input::get('time_gap');
-        		$shift->date_id 	=	$date->first()->id;
-        		
-        		if($shift->save()){
-        			return $this->apiController->respond([
-        				'message'		=>	'Shift has been successfully updated.'
-        			]);
-        		}
-        	}
-        	return $this->apiController->respondNotFound('Barber does not exist or Shift cannot be udated.');
-        }
-        return $this->apiController->respondInvalidParameters($validator->messages());
+		return $this->apiController->respond([
+			'message'	=>	'Shift has been successfully updated.',
+			'details'	=>	$this->shiftsTransformer->transform($shift)
+		]);
 	}
 }
