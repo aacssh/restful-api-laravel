@@ -1,5 +1,7 @@
 <?php
 use \HairConnect\Transformers\UsersTransformer;
+use \HairConnect\Services\UserService;
+use \HairConnect\Validators\ValidationException;
 
 class UsersController extends \BaseController {
     /**
@@ -7,12 +9,25 @@ class UsersController extends \BaseController {
      */
     protected $usersTransformer;
 
+    /**
+     * [$userService description]
+     * @var [type]
+     */
+    protected $userService;
+
+    /**
+     * [$apiController description]
+     * @var [type]
+     */
+    protected $apiController;
 
     /**
      * @param UsersTransformer $usersTransformer
      */
-    public function __construct(UsersTransformer $usersTransformer){
+    public function __construct(UsersTransformer $usersTransformer, UserService $userService, APIController $apiController){
         $this->usersTransformer = $usersTransformer;
+        $this->userService 		= $userService;
+        $this->apiController 	= $apiController;
     }
 
 	/**
@@ -20,15 +35,29 @@ class UsersController extends \BaseController {
 	 *
 	 * @return Response
 	 */
-	public function store()
+	public function register()
 	{
-        $validator = Validator::make(Input::all(),[
-            'name'              =>  'required',
-            'username' 			=>  'required|max:20|min:2|unique:users',
-            'password' 			=>  'required|min:6',
-            'confirm_password' 	=>  'required|same:password',
-            'email' 			=>  'required|max:60|email|unique:users'
-        ]);
+		try{
+        	$this->userService->make(Input::all());
+        }catch(ValidationException $e){
+        	return $this->apiController->respondInvalidParameters($e->getErrors());
+        }
+
+        return $this->apiController->respond([
+			'message'	=>	'User has been successfully registered.'
+		]);
+	}
+
+	public function login()
+	{
+		try{
+        	$this->userService->login(Input::all());
+        }catch(ValidationException $e){
+        	return $this->apiController->respondInvalidParameters($e->getErrors());
+        }
+        return $this->apiController->respond([
+			'message' => 'Successfully logged in.'
+		]);
 	}
 
 	/**
@@ -37,9 +66,12 @@ class UsersController extends \BaseController {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function destroy($id)
+	public function destroy()
 	{
-		//
+		Auth::logout();
+		return $this->apiController->respond([
+			'message' => 'Successfully logged out.'
+		]);
 	}
 
 	public function loginWithFacebook()

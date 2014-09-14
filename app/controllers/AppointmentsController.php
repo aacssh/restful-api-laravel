@@ -1,7 +1,7 @@
 <?php
 use \HairConnect\Transformers\AppointmentsTransformer;
 
-class AppointmentsController extends \BaseController {
+abstract class AppointmentsController extends \BaseController {
 
 	/**
 	 * [$appointmentsTransformer description]
@@ -14,6 +14,19 @@ class AppointmentsController extends \BaseController {
 	 * @var [type]
 	 */
 	protected $apiController;
+
+
+	/**
+	 * [$mainClass description]
+	 * @var [type]
+	 */
+	protected $mainClass;
+
+	/**
+	 * [$secClass description]
+	 * @var [type]
+	 */
+	protected $secClass;
 
 	/**
 	 * [__construct description]
@@ -31,45 +44,40 @@ class AppointmentsController extends \BaseController {
 	 * @return Response
 	 */
 	public function index($username)
-	{
-		$login_id	=	User::whereUsername($username)->get();
-		
-		if($login_id->count()){
-			$barber	= 	Barber::where('login_id', '=', $login_id->first()->id);
+	{	
+		$user = $this->getMainUser($username);
 
-			if($barber->count()){
-				$barber 		= 	$barber->first();
-				$limit			=	Input::get('limit') ?: 5;
-				$appointments	= 	Appointment::where('barber_id', '=', $barber->id)->paginate($limit);
-				$total 			=	$appointments->getTotal();
-				
-				if($appointments->count()){
-					$client_appointments   = 	[];
-					foreach ($appointments as $appointment) {
-						$client = 	Client::where('id', '=', $appointment->client_id)->get()->first();
-						$date 	= 	Date::where('id', '=', $appointment->date_id)->get()->first();
-						
-						array_push($client_appointments,[
-							'appointment_id'	=>	$appointment->id,
-							'client_name' 		=>	$client->fname.' '.$client->lname,
-							'client_id'			=>	$client->id,
-							'time' 				=>	$appointment->time,
-							'cancelled'			=>	(bool)$appointment->deleted,
-							'date'				=>	$date->date
-						]);
-					}
-
-					return $this->apiController->respond([
-						'appointments' 	=> $client_appointments,
-			            'paginator'		=>	[
-			            	'total_count'	=>	$total,	
-			            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
-			            	'current_page'	=>	$appointments->getCurrentPage(),
-			            	'limit'			=>	(int)$limit,
-			            	'prev'			=>	$appointments->getLastPage()
-			            ]
+		if($user->count()){
+			$limit			=	Input::get('limit') ?: 5;
+			$appointments	= 	Appointment::where("{$this->mainClass}_id", '=', $user->id)->paginate($limit);
+			$total 			=	$appointments->getTotal();
+			
+			if($appointments->count()){
+				$secClass_appointments   = 	[];
+				foreach ($appointments as $appointment) {
+					$secClass = $this->getSecondaryUser($appointment->client_id);
+					$date 	  =	Date::where('id', '=', $appointment->date_id)->get()->first();
+					
+					array_push($secClass_appointments,[
+						'appointment_id'		=>	(int)$appointment->id,
+						"{$this->secClass}_name" =>	$secClass->fname.' '.$secClass->lname,
+						"{$this->secClass}_id"	=>	(int)$secClass->id,
+						'time' 					=>	$appointment->time,
+						'cancelled'				=>	(bool)$appointment->deleted,
+						'date'					=>	$date->date
 					]);
 				}
+
+				return $this->apiController->respond([
+					'appointments' 	=> $secClass_appointments,
+		            'paginator'		=>	[
+		            	'total_count'	=>	$total,	
+		            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
+		            	'current_page'	=>	$appointments->getCurrentPage(),
+		            	'limit'			=>	(int)$limit,
+		            	'prev'			=>	$appointments->getLastPage()
+		            ]
+				]);
 			}
 		}
 	}
@@ -83,34 +91,29 @@ class AppointmentsController extends \BaseController {
 	 */
 	public function show($username, $appointmentId)
 	{
-		$login_id	=	User::whereUsername($username)->get();
-		
-		if($login_id->count()){
-			$barber	= 	Barber::where('login_id', '=', $login_id->first()->id);
+		$user = $this->getMainUser($username);
 
-			if($barber->count()){
-				$barber    		=	$barber->first();
-				$appointment    =	Appointment::where('id', '=', $appointmentId)
-															->where('barber_id', '=', $barber->id)->get();
-				
-				if($appointment->count()){
-					$appointment	=	$appointment->first();
-					$client 		= 	Client::where('id', '=', $appointment->client_id)->get()->first();
-					$date 			= 	Date::where('id', '=', $appointment->date_id)->get()->first();
+		if($user->count()){
+			$appointment    =	Appointment::where('id', '=', $appointmentId)
+										->where("{$this->mainClass}_id", '=', $user->id)->get();
+			
+			if($appointment->count()){
+				$appointment	=	$appointment->first();
+				$secClass 		= $this->getSecondaryUser($appointment->client_id);
+				$date 			= 	Date::where('id', '=', $appointment->date_id)->get()->first();
 
-					return $this->apiController->respond([
-						'appointment' 	=> [
-							'client_name' 		=>	$client->fname.' '.$client->lname,
-							'client_username'	=>	$client->id,
-							'canceled'			=>	(bool)$appointment->deleted,
-							'time' 				=>	$appointment->time,
-							'date'				=>	$date->date
-						]
-					]);
-				}
-				return $this->apiController->respondNotFound('Appointment is not found or cancelled or expired.');
+				return $this->apiController->respond([
+					'appointment' 	=> [
+						"{$this->secClass}_name"		=>	$secClass->fname.' '.$secClass->lname,
+						"{$this->secClass}_username"	=>	$secClass->id,
+						'canceled'						=>	(bool)$appointment->deleted,
+						'time' 							=>	$appointment->time,
+						'date'							=>	$date->date
+					]
+				]);
 			}
-		}
+			return $this->apiController->respondNotFound('Appointment is not found or cancelled or expired.');
+		}	
 	}
 
 	/**
@@ -121,29 +124,28 @@ class AppointmentsController extends \BaseController {
 	 */
 	public function destroy($username, $appointmentId)
 	{
-		$login_id	=	User::whereUsername($username)->get();
-		
-		if($login_id->count()){
-			$barber = 	Barber::where('login_id', '=', $login_id->first()->id);
+		$user = $this->getMainUser($username);
 
-			if($barber->count()){
-				$barber    		=	$barber->first();
-				$appointment    = 	Appointment::where('id', '=', $appointmentId)
-										->where('barber_id', '=', $barber->id)->where('deleted', '=', 0)->get();
+		if($user->count()){
+			$appointment    = 	Appointment::where('id', '=', $appointmentId)
+									->where("{$this->mainClass}_id", '=', $user->id)->where('deleted', '=', 0)->get();
 
-				if($appointment->count()){
-					$appointment 			= $appointment->first();
-					$appointment->deleted 	= 1;
-					$appointment->save();
+			if($appointment->count()){
+				$appointment 			= $appointment->first();
+				$appointment->deleted 	= 1;
+				$appointment->save();
 
-					return $this->apiController->respond([
-						'message' 	=>	'Appointment has been successfully cancelled.',
-						'cancelled'	=>	(bool)$appointment->deleted
-					]);
-				}
-				return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
+				return $this->apiController->respond([
+					'message' 	=>	'Appointment has been successfully cancelled.',
+					'cancelled'	=>	(bool)$appointment->deleted
+				]);
 			}
+			return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
 		}
-		return $this->apiController->respondNotFound('Barber does not exist.');
+		return $this->apiController->respondNotFound('user does not exist.');
 	}
+
+	abstract public function getMainUser($username);
+
+	abstract public function getSecondaryUser($id);
 }
