@@ -1,6 +1,6 @@
 <?php
 namespace HairConnect\Services;
-use HairConnect\Validators\AppointmentValidator;
+use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
 class AppointmentService{
@@ -18,10 +18,20 @@ class AppointmentService{
 	private $appointmentDetails;
 
 	/**
+	 * [$rules description]
+	 * @var [type]
+	 */
+	protected $rules = [
+		'barber_id'    =>	'required',
+		'time'		   =>	'required',
+		'date'		   =>	'required'
+	];
+
+	/**
 	 * [__construct description]
 	 * @param AppointmentValidator $validator [description]
 	 */
-	function __construct(AppointmentValidator $validator){
+	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
@@ -41,6 +51,7 @@ class AppointmentService{
 			
 			$appointment = new \Appointment;
 			$appointment->barber_id = $attributes['barber_id'];
+			dd($attributes['barber_id']);
 			$appointment->time 	    = $attributes['time'].':00';
 			$appointment->client_id = $client->id;
 			$appointment->deleted 	= 0;
@@ -49,7 +60,6 @@ class AppointmentService{
 
 			$this->appointmentDetails = $appointment;
 			return true;
-			}
 		}
 		return false;
 	}
@@ -61,9 +71,9 @@ class AppointmentService{
 	 * @return [type]             [description]
 	 */
 	public function make($username, array $attributes){
-		if($this->validator->isValid($attributes)){
+		if($this->validator->isValid($attributes, $this->rules)){
 			return $this->save($username, $attributes);
 		}
-		return ValidationException('Appointment validation failed.', $this->validator->getErrors());
+		throw new ValidationException('Appointment validation failed.', $this->validator->getErrors());
 	}
 }

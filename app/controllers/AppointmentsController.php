@@ -54,8 +54,14 @@ abstract class AppointmentsController extends \BaseController {
 			
 			if($appointments->count()){
 				$secClass_appointments   = 	[];
-				foreach ($appointments as $appointment) {
-					$secClass = $this->getSecondaryUser($appointment->client_id);
+				foreach ($appointments as $appointment)
+				{
+					if($this->secClass == 'barber'){
+						$secClass = $this->getSecondaryUser($appointment->barber_id);
+					}else if($this->secClass == 'client'){
+						$secClass = $this->getSecondaryUser($appointment->client_id);
+					}
+					
 					$date 	  =	Date::where('id', '=', $appointment->date_id)->get()->first();
 					
 					array_push($secClass_appointments,[
@@ -67,7 +73,7 @@ abstract class AppointmentsController extends \BaseController {
 						'date'					=>	$date->date
 					]);
 				}
-
+				
 				return $this->apiController->respond([
 					'appointments' 	=> $secClass_appointments,
 		            'paginator'		=>	[

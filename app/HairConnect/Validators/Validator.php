@@ -2,12 +2,12 @@
 namespace HairConnect\Validators;
 use Validator as V;
 
-abstract class Validator{
+class Validator{
 	protected $errors;
 
-	public function isValid(array $attributes)
+	public function isValid(array $attributes, array $rules)
 	{
-		$v = V::make($attributes, static::$rules);
+		$v = V::make($attributes, $rules);
 
 		if($v->fails()){
 			$this->errors = $v->messages();

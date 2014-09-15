@@ -18,6 +18,17 @@ class ClientsAppointmentsController extends AppointmentsController{
 	protected $secClass = 'barber';
 
 	/**
+	 * [$appointmentService description]
+	 * @var [type]
+	 */
+	protected $appointmentService;
+
+	function __construct(AppointmentsTransformer $appointmentsTransformer, APIController $apiController, AppointmentService $appointmentService){
+		parent::__construct($appointmentsTransformer, $apiController);
+		$this->appointmentService = $appointmentService;
+	}
+
+	/**
 	 * [getMainUser description]
 	 * @param  [type] $username [description]
 	 * @return [type]           [description]
@@ -32,7 +43,7 @@ class ClientsAppointmentsController extends AppointmentsController{
 	 * @return [type]     [description]
 	 */
 	public function getSecondaryUser($id){
-		return Barber::where('id', '=', $id)->get()->first();
+		return Barber::find($id);
 	}
 	/**
 	 * Store a newly created resource in storage.

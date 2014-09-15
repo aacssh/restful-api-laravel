@@ -1,6 +1,6 @@
 <?php
 namespace HairConnect\Services;
-use HairConnect\Validators\ShiftValidator;
+use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
 class ShiftCreatorService{
@@ -12,6 +12,17 @@ class ShiftCreatorService{
 	protected $validator;
 
 	/**
+	 * [$rules description]
+	 * @var array
+	 */
+	protected $rules =	[
+		'start_time'    =>  'required',
+        'end_time' 		=>  'required',
+        'time_gap' 		=>  'required',
+        'date' 			=>  'required'
+	];
+
+	/**
 	 * [$shift description]
 	 * @var [type]
 	 */
@@ -21,7 +32,7 @@ class ShiftCreatorService{
 	 * [__construct description]
 	 * @param ShiftValidator $validator [description]
 	 */
-	function __construct(ShiftValidator $validator){
+	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
@@ -64,7 +75,7 @@ class ShiftCreatorService{
 	public function update($username, $shiftId, array $attributes)
 	{
 		// Validate data
-		if($this->validator->isValid($attributes)){
+		if($this->validator->isValid($attributes, $this->rules)){
 			$this->save($username, $attributes, $shiftId);
 			return $this->shiftDetails;
 		}

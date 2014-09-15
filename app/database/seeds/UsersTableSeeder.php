@@ -12,9 +12,9 @@ class UsersTableSeeder extends Seeder {
         foreach(range(1, 20) as $index)
         {
             User::create([
+                'email'     =>  $faker->email,
                 'username'  =>  $faker->userName,
-                'password'  =>  Hash::make('software'),
-                'email'     =>  $faker->email
+                'password'  =>  Hash::make('software')
             ]);
         }
     }

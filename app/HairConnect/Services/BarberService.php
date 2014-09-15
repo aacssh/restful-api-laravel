@@ -1,6 +1,6 @@
 <?php
 namespace HairConnect\Services;
-use HairConnect\Validators\BarberValidator;
+use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
 class BarberService{
@@ -12,6 +12,18 @@ class BarberService{
 	protected $validator;
 
 	/**
+	 * [$rules description]
+	 * @var array
+	 */
+	protected $rules = [
+		'fname'			=> 	'required|Alpha',
+		'lname'			=>	'required|Alpha',
+		'contact_no'	=>	'required|numeric',
+		'address'		=>	'required',
+		'email'			=>	'required|email'
+	];
+
+	/**
 	 * [$barber description]
 	 * @var object
 	 */
@@ -21,7 +33,7 @@ class BarberService{
 	 * [__construct description]
 	 * @param BarberValidator $barberValidator [description]
 	 */
-	function __construct(BarberValidator $validator){
+	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
@@ -59,7 +71,7 @@ class BarberService{
 	 */
 	public function update($username, array $attributes)
 	{
-		if($this->validator->isValid($attributes)){
+		if($this->validator->isValid($attributes, $this->rules)){
 			if($this->save($username, $attributes)){
 				return $this->barberDetails;
 			}

@@ -51,12 +51,19 @@ class UsersController extends \BaseController {
 	public function login()
 	{
 		try{
-        	$this->userService->login(Input::all());
+        	if(!$this->userService->login(Input::all())){
+        		return $this->apiController->respond([
+        			'error' => [
+						'message' => 'Password or email does not match.'
+					]
+				]);
+        	}
         }catch(ValidationException $e){
         	return $this->apiController->respondInvalidParameters($e->getErrors());
         }
         return $this->apiController->respond([
-			'message' => 'Successfully logged in.'
+			'message' => 'Successfully logged in.',
+			'user_id' => (int)Auth::user()->id
 		]);
 	}
 
@@ -71,6 +78,49 @@ class UsersController extends \BaseController {
 		Auth::logout();
 		return $this->apiController->respond([
 			'message' => 'Successfully logged out.'
+		]);
+	}
+
+	public function update()
+	{
+		try{
+			if(!$this->userService->update(Input::all())){
+				return $this->apiController->respondNotFound('Invalid old password.');
+			}
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());
+		}
+		return $this->apiController->respond([
+			'message' => 'Password successfully changed.'
+		]);
+	}
+
+	public function forgotPassword()
+	{
+		try{
+			if(!$this->userService->forgotPassword(Input::all())){
+				return $this->apiController->respond([
+					'message' => 'Email does not exist.'
+				]);
+			}
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());
+		}
+		return $this->apiController->respond([
+			'message' => 'Check your email for new password.'
+		]);
+	}
+
+	public function recover($code)
+	{
+		try{
+			$this->userService->recover(Input::all(), $code);
+		}catch(ValidationException $e){
+			return $this->apiController->respondInvalidParameters($e->getErrors());
+		}
+
+		return $this->apiController->respond([
+			'message' => 'Your account has been recovered. Sign in with your new password'
 		]);
 	}
 

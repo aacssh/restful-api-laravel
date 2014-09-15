@@ -12,7 +12,7 @@ class ClientsTableSeeder extends Seeder {
         foreach(range(1, 10) as $index)
         {
             Client::create([
-            	'login_id'	=>	$faker->unique()->randomElement($user),
+            	'user_id'	=>	$faker->unique()->randomElement($user),
             	'fname'     =>  $faker->firstName,
                 'lname'     =>  $faker->lastName,
                 'image'     =>  $faker->imageUrl(300, 200),

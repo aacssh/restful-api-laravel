@@ -51,6 +51,7 @@ class BarbersController extends \BaseController {
 		$limit		=	Input::get('limit') ?: 5;
         $barbers 	= 	Barber::paginate($limit);
         $total 		=	$barbers->getTotal();
+
         return $this->apiController->respond([
             'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
             'paginator'	=>	[

@@ -20,7 +20,6 @@ class CreateClientsTable extends Migration {
 			$table->binary('image');
 			$table->bigInteger('contact_no');
             $table->string('address')->nullable();
-			$table->string('email', 60);
 			$table->boolean('active');
 			$table->boolean('deleted');
 			$table->timestamps();
