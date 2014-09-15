@@ -6,6 +6,7 @@ Route::group(['prefix' => 'api/v1'], function(){
     Route::put('change-password', ['as' => 'api.v1.users.change.password', 'uses' => 'UsersController@update']);
     Route::post('forgot-password', ['as' => 'api.v1.users.forgot.password', 'uses' => 'UsersController@forgotPassword']);
     Route::get('recover/{code}', ['as' => 'api.v1.users.recover', 'uses' => 'UsersController@recover']);
+    Route::post('search', ['as' => 'api.v1.barbers.search', 'uses' => 'BarbersController@search']);
     Route::resource('barbers', 'BarbersController', ['except' => ['store', 'create', 'edit']]);
     Route::resource('clients', 'ClientsController', ['except' => ['store', 'create', 'edit']]);
     Route::resource('barbers.appointments', 'BarbersAppointmentsController', ['except' => ['store', 'create', 'edit', 'update']]);

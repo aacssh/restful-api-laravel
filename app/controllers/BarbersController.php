@@ -127,4 +127,15 @@ class BarbersController extends \BaseController {
 		}
 		return $this->apiController->respondNotFound('Barber not registered or deactivated.');
 	}
+
+	public function search()
+	{
+		$name = explode(' ', Input::get('name'));
+		$barber = Barber::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')->get();
+		return $this->apiController->respond([
+            'data' 		=> 	$this->barbersTransformer->transformCollection($barber->all())
+        ]);
+		$city = Input::get('city') ? : ' ';
+		$zip  = Input::get('zip') ? : ' ';
+	}
 }
