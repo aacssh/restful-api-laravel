@@ -36,52 +36,40 @@ class UserService{
 	];
 
 	/**
-	 * [$userDetais description]
+	 * [$accessToken description]
 	 * @var [type]
 	 */
-	protected $userDetais;
+	protected $accessToken;
 
 	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
-	public function save(array $attributes)
-	{
-		\DB::transaction(function() use ($attributes){
-			//$code 	  		= str_random(60);
-			//Storing user's data
-			$user 			= new \User;
-			$user->email 	= $attributes['email'];
-			$user->username = $attributes['username'];
-			$user->password = \Hash::make($attributes['password']);
-			//$user->code 	= $code;
-			//$user->active 	= 0;
-			$user->save();
-			$this->userDetails = $user;
-	
-			if($attributes['type'] == 'barber'){
-				$type = new \Barber;
-			}else if($attributes['type'] == 'client'){
-				$type = new \Client;
-			}
-			$name = explode(' ', $attributes['name']);
-			$type->user_id 	= $user->id;
-			$type->fname 	= trim($name[0]);
-			$type->lname 	= trim($name[1]);
-			
-			if(!$type->save()){
-			    throw new \Exception('User not created for account');
-			}
-		});
-		return true;
-	}
-
 	public function make(array $attributes){
 		// Validate data
 		if($this->validator->isValid($attributes, $this->registorRules)){
-			if($this->save($attributes)){
-				return $this->userDetails;
-			}
+			\DB::transaction(function() use ($attributes){
+				$user 			= new \User;
+				$user->email 	= $attributes['email'];
+				$user->username = $attributes['username'];
+				$user->password = \Hash::make($attributes['password']);
+				$user->save();
+		
+				if($attributes['type'] == 'barber'){
+					$type = new \Barber;
+				}else if($attributes['type'] == 'client'){
+					$type = new \Client;
+				}
+				$name = explode(' ', $attributes['name']);
+				$type->user_id 	= $user->id;
+				$type->fname 	= trim($name[0]);
+				$type->lname 	= trim($name[1]);
+				
+				if(!$type->save()){
+				    throw new \Exception('User not created for account');
+				}
+			});
+			return true;
 		}
 		throw new ValidationException('User\'s details validation failed', $this->validator->getErrors());
 	}
@@ -89,15 +77,23 @@ class UserService{
 	public function login(array $attributes)
 	{
 		if($this->validator->isValid($attributes, $this->loginRules)){
-			$auth = \Auth::attempt([
+			$auth = \Auth::validate([
 				'email'		=>	$attributes['email'],
 				'password'	=>	$attributes['password']
 			]);
 			
-			if(!$auth){
-				return false;
+			if($auth){
+				$accessToken = str_random(60);
+				$saveToken = \User::findByEmailOrFail($attributes['email']);
+				$saveToken->access_token = $accessToken;
+
+				if($saveToken->save()){
+					$this->accessToken = $accessToken;
+					return true;
+				}
 			}
-			return true;
+
+			return false;
 		}
 		throw new ValidationException('Login validation failed', $this->validator->getErrors());
 	}
@@ -154,8 +150,14 @@ class UserService{
 			$user->code 		 	= '';
 			
 			if($user->save()){
-				
+				return true;	
 			}
 		}
+		return false;
+	}
+
+	public function getToken()
+	{
+		return $this->accessToken;
 	}
 }

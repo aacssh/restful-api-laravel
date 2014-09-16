@@ -50,6 +50,25 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         throw new ModelNotFoundException;
     }
 
+    /**
+     * Find by email, or throw an exception.
+     *
+     * @param string $email The email.
+     * @param mixed $columns The columns to return.
+     *
+     * @throws ModelNotFoundException if no matching User exists.
+     *
+     * @return User
+     */
+    public static function findByEmailOrFail($email, $columns = array('*'))
+    {
+        if ( ! is_null($user = static::whereEmail($email)->first($columns))) {
+            return $user;
+        }
+
+        throw new ModelNotFoundException;
+    }
+
 	public function barber()
 	{
 		return $this->hasOne('Barber');

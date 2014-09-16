@@ -44,7 +44,7 @@ class UsersController extends \BaseController {
         }
 
         return $this->apiController->respond([
-			'message'	=>	'User has been successfully registered.'
+			'message'		=>	'User has been successfully registered.'
 		]);
 	}
 
@@ -62,8 +62,8 @@ class UsersController extends \BaseController {
         	return $this->apiController->respondInvalidParameters($e->getErrors());
         }
         return $this->apiController->respond([
-			'message' => 'Successfully logged in.',
-			'user_id' => (int)Auth::user()->id
+			'message' 		=> 'Successfully logged in.',
+			'access_token' 	=> $this->userService->getToken()
 		]);
 	}
 
@@ -75,9 +75,16 @@ class UsersController extends \BaseController {
 	 */
 	public function destroy()
 	{
-		Auth::logout();
+		$saveToken = User::findByUsernameOrFail(Input::get('username'));
+		$saveToken->access_token = NULL;
+
+		if($saveToken->save()){
+			return $this->apiController->respond([
+				'message' => 'Successfully logged out.'
+			]);
+		}
 		return $this->apiController->respond([
-			'message' => 'Successfully logged out.'
+			'message' => 'Could not logged out. Try again'
 		]);
 	}
 
