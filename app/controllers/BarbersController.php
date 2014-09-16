@@ -130,12 +130,22 @@ class BarbersController extends \BaseController {
 
 	public function search()
 	{
-		$name = explode(' ', Input::get('name'));
-		$barber = Barber::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')->get();
+		if(Input::get('name')){
+			$name = explode(' ', Input::get('name'));
+
+			if(count($name) == 1){
+				$name[1] = Input::get('name');
+			}
+		}else{
+			$name = ['', ''];
+		}
+
+		$barber = Barber::orWhere('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+					->orWhere('zip', '=', Input::get('zip'))
+					->orWhere('address', 'LIKE', '%'.Input::get('city').'%')->get();
+
 		return $this->apiController->respond([
             'data' 		=> 	$this->barbersTransformer->transformCollection($barber->all())
         ]);
-		$city = Input::get('city') ? : ' ';
-		$zip  = Input::get('zip') ? : ' ';
 	}
 }

@@ -14,7 +14,8 @@ class CreateHairStyleImageTable extends Migration {
 	{
         Schema::create('hair_style_images', function(Blueprint $table) {
             $table->increments('id');
-			$table->integer('barber_id');
+			$table->integer('barber_id')->unsigned();
+            $table->foreign('barber_id')->references('id')->on('barbers')->onDelete('cascade');
 			$table->binary('image');
 			$table->string('image_title');
 			$table->timestamps();

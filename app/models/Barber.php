@@ -11,11 +11,4 @@ class Barber extends \Eloquent {
     {
     	return $this->belongsTo('User');
     }
-
-    /*
-    public function shifts()
-    {
-    	return $this->hasMany('Shift', 'barber_id');
-    }
-	*/
 }

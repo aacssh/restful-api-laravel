@@ -14,7 +14,8 @@ class CreateShiftsTable extends Migration {
 	{
         Schema::create('shifts', function(Blueprint $table) {
             $table->increments('id');
-            $table->integer('barber_id');
+            $table->integer('barber_id')->unsigned();
+            $table->foreign('barber_id')->references('id')->on('barbers')->onDelete('cascade');
             $table->time('start_time');
             $table->time('end_time');
             $table->integer('time_gap');

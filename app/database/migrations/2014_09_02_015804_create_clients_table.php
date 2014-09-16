@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
-class CreateBarbersTable extends Migration {
+class CreateClientsTable extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -12,14 +12,18 @@ class CreateBarbersTable extends Migration {
 	 */
 	public function up()
 	{
-        Schema::create('barbers', function(Blueprint $table) {
+        Schema::create('clients', function(Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id');
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('fname', 100);
 			$table->string('lname', 100);
 			$table->binary('image');
 			$table->bigInteger('contact_no');
-            $table->string('address')->nullable();
+			$table->integer('zip');
+			$table->string('address');
+            //$table->integer('address_id')->unsigned();
+            //$table->foreign('address_id')->references('id')->on('addresses')->onDelete('cascade');
 			$table->boolean('active');
 			$table->boolean('deleted');
 			$table->timestamps();
@@ -34,7 +38,7 @@ class CreateBarbersTable extends Migration {
 	 */
 	public function down()
 	{
-	    Schema::drop('barbers');
+	    Schema::drop('clients');
 	}
 
 }

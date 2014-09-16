@@ -9,6 +9,7 @@ class BarbersTableSeeder extends Seeder {
     {
         $faker 	= 	Faker::create();
         $user	=	User::lists('id');
+        //$address = Address::lists('id');
         foreach(range(1, 10) as $index)
         {
             Barber::create([
@@ -17,7 +18,8 @@ class BarbersTableSeeder extends Seeder {
                 'lname'     =>  $faker->lastName,
                 'image'     =>  $faker->imageUrl(300, 200),
                 'contact_no'=>  $faker->phoneNumber(),
-                'address'   =>  $faker->address,
+                'zip'       =>  $faker->postcode,
+                'address'   =>  $faker->city.', '.$faker->state,
                 'active'    =>  $faker->boolean(),
                 'deleted'   =>  $faker->boolean()
             ]);

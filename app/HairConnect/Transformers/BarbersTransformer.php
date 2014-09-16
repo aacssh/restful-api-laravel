@@ -8,7 +8,6 @@
 
 namespace HairConnect\Transformers;
 
-
 /**
  * Class BarbersTransformer
  * @package HairConnect\Transformers
@@ -26,13 +25,14 @@ class BarbersTransformer extends Transformers{
             'username'      =>  $login_details->username,
             'name'          =>  $barber['fname'].' '.$barber['lname'],
             'profile_image' =>  $barber['image'],
-            'contact_no'    =>  $barber['contact_no'],
+            'contact_no'    =>  (int)$barber['contact_no'],
             'email'         =>  $login_details->email,
             'address'       =>  $barber['address'],
+            'zip'           =>  (int)$barber['zip'],
             'online'        =>  (boolean)$barber['active'],
             'activate'      =>  (boolean)$barber['deleted'],
             'member_since'  =>  $barber['created_at'],
             'resource_uri'	=>  \URL::to('/').'/barbers/'.$login_details->username
         ];
     }
-} 
+}
