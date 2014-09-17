@@ -83,7 +83,7 @@ class UserService{
 			]);
 			
 			if($auth){
-				$accessToken = str_random(60);
+				$accessToken = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
 				$saveToken = \User::findByEmailOrFail($attributes['email']);
 				$saveToken->access_token = $accessToken;
 

@@ -3,7 +3,7 @@ use \HairConnect\Transformers\ClientsTransformer;
 use \HairConnect\Services\ClientService;
 use \HairConnect\Validators\ValidationException;
 
-class ClientsController extends \BaseController {
+class ClientsController extends TokensController {
 
 	/**
 	 * [$clientsTransformer description]
@@ -54,14 +54,21 @@ class ClientsController extends \BaseController {
 	 */
 	public function show($username)
 	{
-		$client = User::findByUsernameOrFail($username)->client;
-		if($client->count()){
-			return $this->apiController->respond([
-				'details'	=> 	$this->clientsTransformer->transform($client)
-			]);
-		}
+		if($this->checkToken(Input::get('token'), $username)){
+			$client = User::findByUsernameOrFail($username)->client;
 
-		return $this->apiController->respondNotFound('Client cannot be found or the account is deactivated.');
+			if($client->count()){
+				return $this->apiController->respond([
+					'details'	=> 	$this->clientsTransformer->transform($client)
+				]);
+			}
+			return $this->apiController->respondNotFound('Client cannot be found or the account is deactivated.');
+		}
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 
 	/**
@@ -72,16 +79,23 @@ class ClientsController extends \BaseController {
 	 */
 	public function update($username)
 	{
-		try{
-			$client = $this->clientService->update($username, Input::all());
+		if($this->checkToken(Input::get('token'), $username)){
+			try{
+				$client = $this->clientService->update($username, Input::all());
 
-			return $this->apiController->respond([
-				'message'	=>	'Profile info have been updated.',
-				'data'		=>	$this->clientsTransformer->transform($client)
-			]);
-		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());
+				return $this->apiController->respond([
+					'message'	=>	'Profile info have been updated.',
+					'data'		=>	$this->clientsTransformer->transform($client)
+				]);
+			}catch(ValidationException $e){
+				return $this->apiController->respondInvalidParameters($e->getErrors());
+			}
 		}
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 
 	/**
@@ -92,18 +106,25 @@ class ClientsController extends \BaseController {
 	 */
 	public function destroy($username)
 	{
-		$user 	   =	User::findByUsernameOrFail($username);
-		$client    =	$user->client;
-		if($client->count()){
-			$client->active		=	0;
-			$client->deleted	=	0;
-			$client->save();
+		if($this->checkToken(Input::get('token'), $username)){
+			$user 	   =	User::findByUsernameOrFail($username);
+			$client    =	$user->client;
+			if($client->count()){
+				$client->active		=	0;
+				$client->deleted	=	0;
+				$client->save();
 
-			return $this->apiController->respond([
-				'message' 	=> 'Account has been successfully deactivated.',
-				'activate'	=>	(bool)$client->deleted
-			]);
+				return $this->apiController->respond([
+					'message' 	=> 'Account has been successfully deactivated.',
+					'activate'	=>	(bool)$client->deleted
+				]);
+			}
+			return $this->apiController->respondNotFound('Client not registered or deactivated.');
 		}
-		return $this->apiController->respondNotFound('Client not registered or deactivated.');
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 }

@@ -52,15 +52,22 @@ class ClientsAppointmentsController extends AppointmentsController{
 	 */
 	public function store($username)
 	{	
-		try{
-			if($this->appointmentService->make($username, Input::all())){
-				return $this->apiController->respond([
-					'message'	=>	'Appointment has been booked in your name.'
-				]);	
+		if($this->checkToken(Input::get('token'), $username)){
+			try{
+				if($this->appointmentService->make($username, Input::all())){
+					return $this->apiController->respond([
+						'message'	=>	'Appointment has been booked in your name.'
+					]);	
+				}
+				return $this->apiController->respondNotFound('Appointment cannot be saved. Are you a client?');
+			}catch(ValidationException $e){
+				return $this->apiController->respondInvalidParameters($e->getErrors());
 			}
-			return $this->apiController->respondNotFound('Appointment cannot be saved.');
-		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());
 		}
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 }

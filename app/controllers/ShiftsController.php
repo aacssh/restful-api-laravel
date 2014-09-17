@@ -3,7 +3,7 @@ use \HairConnect\Transformers\ShiftsTransformer;
 use \HairConnect\Services\ShiftCreatorService;
 use \HairConnect\Validators\ValidationException;
 
-class ShiftsController extends \BaseController {
+class ShiftsController extends TokensController {
 	/**
 	 * [$shiftsTransformer description]
 	 * @var [type]
@@ -39,20 +39,27 @@ class ShiftsController extends \BaseController {
 	 */
 	public function index($username)
 	{
-		$log	=	User::whereUsername($username)->get();
-		if($log->count()){
-			$barber	   =	Barber::where('user_id', '=', $log->first()->id)->get();
-			if($barber->count()){
-				$barber    =	$barber->first();
-				$shift 	   = 	Shift::where('barber_id', '=', $barber->id)->get();
+		if($this->checkToken(Input::get('token'), $username)){
+			$log	=	User::whereUsername($username)->get();
+			if($log->count()){
+				$barber	   =	Barber::where('user_id', '=', $log->first()->id)->get();
+				if($barber->count()){
+					$barber    =	$barber->first();
+					$shift 	   = 	Shift::where('barber_id', '=', $barber->id)->get();
 
-				if($shift->count()){
-					return $this->apiController->respond([
-						'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
-					]);
+					if($shift->count()){
+						return $this->apiController->respond([
+							'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
+						]);
+					}
 				}
 			}
 		}
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);		
 	}
 
 	/**
@@ -62,15 +69,22 @@ class ShiftsController extends \BaseController {
 	 */
 	public function store($username)
 	{
-		try{
-			$this->shiftCreator->make($username, Input::all());
-		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());	
-		}
+		if($this->checkToken(Input::get('token'), $username)){
+			try{
+				$this->shiftCreator->make($username, Input::all());
+			}catch(ValidationException $e){
+				return $this->apiController->respondInvalidParameters($e->getErrors());	
+			}
 
+			return $this->apiController->respond([
+				'message'	=>	'Shift has been successfully created.'
+			]);
+		}
 		return $this->apiController->respond([
-			'message'	=>	'Shift has been successfully created.'
-		]);
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 
 	/**
@@ -81,18 +95,25 @@ class ShiftsController extends \BaseController {
 	 */
 	public function show($username, $shiftId)
 	{
-		$barber = User::findByUsernameOrFail($username)->barber;
-		
-		if($barber->count()){
-			$shift = Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
+		if($this->checkToken(Input::get('token'), $username)){
+			$barber = User::findByUsernameOrFail($username)->barber;
+			
+			if($barber->count()){
+				$shift = Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
 
-			if($shift->count()){
-				return $this->apiController->respond([
-					'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
-				]);
+				if($shift->count()){
+					return $this->apiController->respond([
+						'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
+					]);
+				}
+				return $this->apiController->respondNotFound('Shift does not exist.');
 			}
-			return $this->apiController->respondNotFound('Shift does not exist.');
 		}
+		return $this->apiController->respond([
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 
 	/**
@@ -103,15 +124,22 @@ class ShiftsController extends \BaseController {
 	 */
 	public function update($username, $shiftId)
 	{
-		try{
-			$shift = $this->shiftCreator->update($username, $shiftId, Input::all());
-		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());	
-		}
+		if($this->checkToken(Input::get('token'), $username)){
+			try{
+				$shift = $this->shiftCreator->update($username, $shiftId, Input::all());
+			}catch(ValidationException $e){
+				return $this->apiController->respondInvalidParameters($e->getErrors());	
+			}
 
+			return $this->apiController->respond([
+				'message'	=>	'Shift has been successfully updated.',
+				'details'	=>	$this->shiftsTransformer->transform($shift)
+			]);
+		}
 		return $this->apiController->respond([
-			'message'	=>	'Shift has been successfully updated.',
-			'details'	=>	$this->shiftsTransformer->transform($shift)
-		]);
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 }

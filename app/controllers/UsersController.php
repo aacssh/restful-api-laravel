@@ -75,13 +75,14 @@ class UsersController extends \BaseController {
 	 */
 	public function destroy()
 	{
-		$saveToken = User::findByUsernameOrFail(Input::get('username'));
-		$saveToken->access_token = NULL;
+		if(is_object($token = User::findByTokenAndUsernameOrFail(Input::get('token'), Input::get('username')))){
+			$token->access_token = NULL;
 
-		if($saveToken->save()){
-			return $this->apiController->respond([
-				'message' => 'Successfully logged out.'
-			]);
+			if($token->save()){
+				return $this->apiController->respond([
+					'message' => 'Successfully logged out.'
+				]);
+			}
 		}
 		return $this->apiController->respond([
 			'message' => 'Could not logged out. Try again'
@@ -90,16 +91,23 @@ class UsersController extends \BaseController {
 
 	public function update()
 	{
-		try{
-			if(!$this->userService->update(Input::all())){
-				return $this->apiController->respondNotFound('Invalid old password.');
+		if(is_object($token = User::findByTokenAndUsernameOrFail(Input::get('token'), Input::get('username')))){
+			try{
+				if(!$this->userService->update(Input::all())){
+					return $this->apiController->respondNotFound('Invalid old password.');
+				}
+			}catch(ValidationException $e){
+				return $this->apiController->respondInvalidParameters($e->getErrors());
 			}
-		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());
+			return $this->apiController->respond([
+				'message' => 'Password successfully changed.'
+			]);
 		}
 		return $this->apiController->respond([
-			'message' => 'Password successfully changed.'
-		]);
+			'error' => [			
+            	'message' => 'Invalid token'
+            ]
+        ]);
 	}
 
 	public function forgotPassword()
@@ -129,42 +137,5 @@ class UsersController extends \BaseController {
 		return $this->apiController->respond([
 			'message' => 'Your account has been recovered. Sign in with your new password'
 		]);
-	}
-
-	public function loginWithFacebook()
-	{
-		// get data from input
-	    $code = Input::get( 'code' );
-
-	    // get fb service
-	    $fb = OAuth::consumer( 'Facebook' );
-
-	    // check if code is valid
-
-	    // if code is provided get user data and sign in
-	    if ( !empty( $code ) ) {
-
-	        // This was a callback request from facebook, get the token
-	        $token = $fb->requestAccessToken( $code );
-
-	        // Send a request with it
-	        $result = json_decode( $fb->request( '/me' ), true );
-
-	        $message = 'Your unique facebook user id is: ' . $result['id'] . ' and your name is ' . $result['name'];
-	        echo $message. "<br/>";
-
-	        //Var_dump
-	        //display whole array().
-	        dd($result);
-
-	    }
-	    // if not ask for permission first
-	    else {
-	        // get fb authorization
-	        $url = $fb->getAuthorizationUri();
-
-	        // return to facebook login url
-	         return Redirect::to( (string)$url );
-	    }
 	}
 }

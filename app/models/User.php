@@ -46,8 +46,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         if ( ! is_null($user = static::whereUsername($username)->first($columns))) {
             return $user;
         }
-
-        throw new ModelNotFoundException;
+        return false;
     }
 
     /**
@@ -65,8 +64,43 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         if ( ! is_null($user = static::whereEmail($email)->first($columns))) {
             return $user;
         }
+        return false;
+    }
 
-        throw new ModelNotFoundException;
+    /**
+     * Find by token, or throw an exception.
+     *
+     * @param string $token The token.
+     * @param mixed $columns The columns to return.
+     *
+     * @throws ModelNotFoundException if no matching User exists.
+     *
+     * @return User
+     */
+    public static function findByTokenOrFail($token, $columns = array('*'))
+    {
+        if (!is_null($user = static::where('access_token', '=', $token)->first($columns))) {
+            return $user;
+        }
+        return false;
+    }
+
+    /**
+     * Find by token, or throw an exception.
+     *
+     * @param string $token The token.
+     * @param mixed $columns The columns to return.
+     *
+     * @throws ModelNotFoundException if no matching User exists.
+     *
+     * @return User
+     */
+    public static function findByTokenAndUsernameOrFail($token, $username, $columns = array('*'))
+    {
+        if (!is_null($user = static::whereUsername($username)->where('access_token', '=', $token)->first($columns))) {
+            return $user;
+        }
+        return false;
     }
 
 	public function barber()
