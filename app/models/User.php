@@ -13,8 +13,8 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 * [$fillable description]
 	 * @var [type]
 	 */
-    protected $fillable = [
-        'username', 'password', 'email', 'remember_token'
+    protected $guarded = [
+        'id', 'password', 'access_token', 'password_temp', 'code'
     ];
 
 	/**
@@ -103,13 +103,23 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         return false;
     }
 
-	public function barber()
-	{
-		return $this->hasOne('Barber');
-	}
+	public function scopeOfType($query, $type)
+    {
+        return $query->whereType($type);
+    }
 
-	public function client()
-	{
-		return $this->hasOne('Client');
-	}
+    public function getRememberToken()
+    {
+        return $this->remember_token;
+    }
+
+    public function setRememberToken($value)
+    {
+        $this->remember_token = $value;
+    }
+
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
+    }
 }

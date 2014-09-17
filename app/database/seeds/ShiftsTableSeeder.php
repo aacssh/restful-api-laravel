@@ -8,13 +8,18 @@ class ShiftsTableSeeder extends Seeder {
     public function run()
     {
         $faker = Faker::create();
-        $barberIds	=	Barber::lists('id');
+        $barberIds	=	User::ofType('barber')->get();
+        foreach ((array)$barberIds as $barbers) {
+            foreach ($barbers as $barber) {
+                $barber_id[] = $barber->id;
+            }
+        }
         $dateIds    =   Date::lists('id');
 
         foreach(range(1, 10) as $index)
         {
             Shift::create([
-            	'barber_id'		=>	$faker->unique()->randomElement($barberIds),
+            	'user_id'		=>	$faker->randomElement($barber_id),
             	'start_time'	=>	$faker->time(),
             	'end_time'		=>	$faker->time(),
             	'time_gap'		=>	20,

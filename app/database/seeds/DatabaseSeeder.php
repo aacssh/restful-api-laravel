@@ -3,7 +3,7 @@
 class DatabaseSeeder extends Seeder {
 
 	private $tables = [
-		'appointments', 'shifts', 'dates', 'hair_style_images', 'barbers', 'clients', 'users'
+		'appointments', 'shifts', 'dates', 'hair_style_images', 'users'
 	];
 	/**
 	 * Run the database seeds.
@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder {
 
 		$this->call('UsersTableSeeder');
 		//$this->call('AddressesTableSeeder');
-		$this->call('BarbersTableSeeder');
-		$this->call('ClientsTableSeeder');
+		//$this->call('BarbersTableSeeder');
+		//$this->call('ClientsTableSeeder');
 		$this->call('DatesTableSeeder');
 		$this->call('ShiftsTableSeeder');
 		$this->call('HairStyleImageTableSeeder');

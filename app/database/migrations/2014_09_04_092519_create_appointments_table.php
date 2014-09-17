@@ -15,9 +15,9 @@ class CreateAppointmentsTable extends Migration {
         Schema::create('appointments', function(Blueprint $table) {
             $table->increments('id');
             $table->integer('barber_id')->unsigned();
-            $table->foreign('barber_id')->references('id')->on('barbers')->onDelete('cascade');
+            $table->foreign('barber_id')->references('id')->on('users')->onDelete('cascade');
             $table->integer('client_id')->unsigned();
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
+            $table->foreign('client_id')->references('id')->on('users')->onDelete('cascade');
             $table->time('time');
             $table->integer('date_id');
             $table->boolean('deleted');

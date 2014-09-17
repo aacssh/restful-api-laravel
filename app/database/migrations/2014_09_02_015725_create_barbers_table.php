@@ -12,6 +12,7 @@ class CreateBarbersTable extends Migration {
 	 */
 	public function up()
 	{
+		/*
         Schema::create('barbers', function(Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
@@ -28,6 +29,7 @@ class CreateBarbersTable extends Migration {
 			$table->boolean('deleted');
 			$table->timestamps();
         });
+        */
 	}
 
 
@@ -38,7 +40,7 @@ class CreateBarbersTable extends Migration {
 	 */
 	public function down()
 	{
-	    Schema::drop('barbers');
+	    //Schema::drop('barbers');
 	}
 
 }
