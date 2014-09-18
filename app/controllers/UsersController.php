@@ -1,13 +1,8 @@
 <?php
-use \HairConnect\Transformers\UsersTransformer;
 use \HairConnect\Services\UserService;
 use \HairConnect\Validators\ValidationException;
 
 class UsersController extends \BaseController {
-    /**
-     * @var
-     */
-    protected $usersTransformer;
 
     /**
      * [$userService description]
@@ -24,8 +19,7 @@ class UsersController extends \BaseController {
     /**
      * @param UsersTransformer $usersTransformer
      */
-    public function __construct(UsersTransformer $usersTransformer, UserService $userService, APIController $apiController){
-        $this->usersTransformer = $usersTransformer;
+    public function __construct(UserService $userService, APIController $apiController){
         $this->userService 		= $userService;
         $this->apiController 	= $apiController;
     }

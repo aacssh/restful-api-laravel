@@ -39,25 +39,18 @@ class ShiftsController extends TokensController {
 	 */
 	public function index($username)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$log	=	User::whereUsername($username)->get();
-			if($log->count()){
-				$barber	   =	Barber::where('user_id', '=', $log->first()->id)->get();
-				if($barber->count()){
-					$barber    =	$barber->first();
-					$shift 	   = 	Shift::where('barber_id', '=', $barber->id)->get();
+		if(($barber = $this->checkToken(Input::get('token'), $username)) != false){
+			$shift 	   = 	Shift::where('user_id', '=', $barber->id)->get();
 
-					if($shift->count()){
-						return $this->apiController->respond([
-							'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
-						]);
-					}
-				}
+			if($shift->count()){
+				return $this->apiController->respond([
+					'shifts'	=>	$this->shiftsTransformer->transformCollection($shift->all())
+				]);
 			}
 		}
 		return $this->apiController->respond([
 			'error' => [			
-            	'message' => 'Invalid token'
+            	'message' => 'Invalid token or User/Shift does not exist.'
             ]
         ]);		
 	}
@@ -69,7 +62,7 @@ class ShiftsController extends TokensController {
 	 */
 	public function store($username)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
+		if($this->checkToken(Input::get('token'), $username) != false){
 			try{
 				$this->shiftCreator->make($username, Input::all());
 			}catch(ValidationException $e){
@@ -82,7 +75,7 @@ class ShiftsController extends TokensController {
 		}
 		return $this->apiController->respond([
 			'error' => [			
-            	'message' => 'Invalid token'
+            	'message' => 'Invalid token or User/Shift does not exist.'
             ]
         ]);
 	}
@@ -95,23 +88,18 @@ class ShiftsController extends TokensController {
 	 */
 	public function show($username, $shiftId)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$barber = User::findByUsernameOrFail($username)->barber;
-			
-			if($barber->count()){
-				$shift = Shift::where('id','=',$shiftId)->where('barber_id', '=', $barber->id)->get();
+		if(($barber = $this->checkToken(Input::get('token'), $username)) != false){
+			$shift = Shift::where('id','=',$shiftId)->where('user_id', '=', $barber->id)->get();
 
-				if($shift->count()){
-					return $this->apiController->respond([
-						'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
-					]);
-				}
-				return $this->apiController->respondNotFound('Shift does not exist.');
+			if($shift->count()){
+				return $this->apiController->respond([
+					'shifts'	=>	$this->shiftsTransformer->transform($shift->first())
+				]);
 			}
 		}
 		return $this->apiController->respond([
 			'error' => [			
-            	'message' => 'Invalid token'
+            	'message' => 'Invalid token or User/Shift does not exist.'
             ]
         ]);
 	}
@@ -124,7 +112,7 @@ class ShiftsController extends TokensController {
 	 */
 	public function update($username, $shiftId)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
+		if($this->checkToken(Input::get('token'), $username) != false){
 			try{
 				$shift = $this->shiftCreator->update($username, $shiftId, Input::all());
 			}catch(ValidationException $e){
@@ -138,7 +126,7 @@ class ShiftsController extends TokensController {
 		}
 		return $this->apiController->respond([
 			'error' => [			
-            	'message' => 'Invalid token'
+            	'message' => 'Invalid token or User/Shift does not exist.'
             ]
         ]);
 	}

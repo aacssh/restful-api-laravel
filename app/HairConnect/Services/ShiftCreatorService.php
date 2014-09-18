@@ -44,7 +44,7 @@ class ShiftCreatorService{
 	 * @return [type]             [description]
 	 */
 	private function save($username, array $attributes, $shiftId = null){
-		$barber = \User::findByUsernameOrFail($username)->barber;
+		$barber = \User::findByUsernameOrFail($username);
     	$date =	\Date::where('date', '=', $attributes['date'])->get();
 
     	if($shiftId == null){
@@ -53,7 +53,7 @@ class ShiftCreatorService{
     		$shift 	=	\Shift::find($shiftId);	
     	}
 
-		$shift->barber_id	=	$barber->id;
+		$shift->user_id	=	$barber->id;
 		$shift->start_time 	=	$attributes['start_time'].':00:00';
 		$shift->end_time	=	$attributes['end_time'].':00:00';
 		$shift->time_gap	=	(int)$attributes['time_gap'];
@@ -66,7 +66,7 @@ class ShiftCreatorService{
 	public function make($username, array $attributes)
 	{
 		// Validate data
-		if($this->validator->isValid($attributes)){
+		if($this->validator->isValid($attributes, $this->rules)){
 			return $this->save($username, $attributes);
 		}
 		throw new ValidationException('Shift validation failed', $this->validator->getErrors());

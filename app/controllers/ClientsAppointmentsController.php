@@ -6,16 +6,16 @@ use \HairConnect\Validators\ValidationException;
 class ClientsAppointmentsController extends AppointmentsController{
 
 	/**
-	 * [$mainClass description]
+	 * [$mainClassType description]
 	 * @var [type]
 	 */
-	protected $mainClass = 'client';
+	protected $mainType = 'client';
 
 	/**
-	 * [$secClass description]
+	 * [$secType description]
 	 * @var [type]
 	 */
-	protected $secClass = 'barber';
+	protected $secType = 'barber';
 
 	/**
 	 * [$appointmentService description]
@@ -29,30 +29,13 @@ class ClientsAppointmentsController extends AppointmentsController{
 	}
 
 	/**
-	 * [getMainUser description]
-	 * @param  [type] $username [description]
-	 * @return [type]           [description]
-	 */
-	public function getMainUser($username){
-		return User::findByUsernameOrFail($username)->client;
-	}
-
-	/**
-	 * [getSecondaryUser description]
-	 * @param  [type] $id [description]
-	 * @return [type]     [description]
-	 */
-	public function getSecondaryUser($id){
-		return Barber::find($id);
-	}
-	/**
 	 * Store a newly created resource in storage.
 	 *
 	 * @return Response
 	 */
 	public function store($username)
 	{	
-		if($this->checkToken(Input::get('token'), $username)){
+		if($this->checkToken(Input::get('token'), $username) != false){
 			try{
 				if($this->appointmentService->make($username, Input::all())){
 					return $this->apiController->respond([
@@ -65,8 +48,8 @@ class ClientsAppointmentsController extends AppointmentsController{
 			}
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);
 	}

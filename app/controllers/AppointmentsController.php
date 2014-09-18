@@ -15,19 +15,6 @@ abstract class AppointmentsController extends TokensController {
 	 */
 	protected $apiController;
 
-
-	/**
-	 * [$mainClass description]
-	 * @var [type]
-	 */
-	protected $mainClass;
-
-	/**
-	 * [$secClass description]
-	 * @var [type]
-	 */
-	protected $secClass;
-
 	/**
 	 * [__construct description]
 	 * @param AppointmentsTransformer $appointmentsTransformer [description]
@@ -38,6 +25,15 @@ abstract class AppointmentsController extends TokensController {
 	}
 
 	/**
+	 * [getSecondaryUser description]
+	 * @param  [type] $id [description]
+	 * @return [type]     [description]
+	 */
+	public function getSecondaryUser($id){
+		return User::find($id);
+	}
+
+	/**
 	 * Display a listing of the resource.
 	 * 
 	 * @param  string $username	 
@@ -45,52 +41,48 @@ abstract class AppointmentsController extends TokensController {
 	 */
 	public function index($username)
 	{	
-		if($this->checkToken(Input::get('token'), $username)){
-			$user = $this->getMainUser($username);
-
-			if($user->count()){
-				$limit			=	Input::get('limit') ?: 5;
-				$appointments	= 	Appointment::where("{$this->mainClass}_id", '=', $user->id)->paginate($limit);
-				$total 			=	$appointments->getTotal();
-				
-				if($appointments->count()){
-					$secClass_appointments   = 	[];
-					foreach ($appointments as $appointment)
-					{
-						if($this->secClass == 'barber'){
-							$secClass = $this->getSecondaryUser($appointment->barber_id);
-						}else if($this->secClass == 'client'){
-							$secClass = $this->getSecondaryUser($appointment->client_id);
-						}
-						
-						$date 	  =	Date::where('id', '=', $appointment->date_id)->get()->first();
-						
-						array_push($secClass_appointments,[
-							'appointment_id'		=>	(int)$appointment->id,
-							"{$this->secClass}_name" =>	$secClass->fname.' '.$secClass->lname,
-							"{$this->secClass}_id"	=>	(int)$secClass->id,
-							'time' 					=>	$appointment->time,
-							'cancelled'				=>	(bool)$appointment->deleted,
-							'date'					=>	$date->date
-						]);
+		if(($user = $this->checkToken(Input::get('token'), $username)) != false){
+			$limit			=	Input::get('limit') ?: 5;
+			$appointments	= 	Appointment::where("{$this->mainType}_id", '=', $user->id)->paginate($limit);
+			$total 			=	$appointments->getTotal();
+			
+			if($appointments->count()){
+				$secType_appointments   = 	[];
+				foreach ($appointments as $appointment)
+				{
+					if($this->secType == 'barber'){
+						$secType = $this->getSecondaryUser($appointment->barber_id);
+					}else if($this->secType == 'client'){
+						$secType = $this->getSecondaryUser($appointment->client_id);
 					}
 					
-					return $this->apiController->respond([
-						'appointments' 	=> $secClass_appointments,
-			            'paginator'		=>	[
-			            	'total_count'	=>	$total,	
-			            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
-			            	'current_page'	=>	$appointments->getCurrentPage(),
-			            	'limit'			=>	(int)$limit,
-			            	'prev'			=>	$appointments->getLastPage()
-			            ]
+					$date 	  =	Date::where('id', '=', $appointment->date_id)->get()->first();
+					
+					array_push($secType_appointments,[
+						'appointment_id'		=>	(int)$appointment->id,
+						"{$this->secType}_name" =>	$secType->fname.' '.$secType->lname,
+						"{$this->secType}_id"	=>	(int)$secType->id,
+						'time' 					=>	$appointment->time,
+						'cancelled'				=>	(bool)$appointment->deleted,
+						'date'					=>	$date->date
 					]);
 				}
+				
+				return $this->apiController->respond([
+					'appointments' 	=> $secType_appointments,
+		            'paginator'		=>	[
+		            	'total_count'	=>	$total,	
+		            	'total_pages'	=>	ceil($total/$appointments->getPerPage()),
+		            	'current_page'	=>	$appointments->getCurrentPage(),
+		            	'limit'			=>	(int)$limit,
+		            	'prev'			=>	$appointments->getLastPage()
+		            ]
+				]);
 			}
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);	
 	}
@@ -104,34 +96,32 @@ abstract class AppointmentsController extends TokensController {
 	 */
 	public function show($username, $appointmentId)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$user = $this->getMainUser($username);
-
-			if($user->count()){
-				$appointment    =	Appointment::where('id', '=', $appointmentId)
-											->where("{$this->mainClass}_id", '=', $user->id)->get();
-				
-				if($appointment->count()){
-					$appointment	=	$appointment->first();
-					$secClass 		= $this->getSecondaryUser($appointment->client_id);
-					$date 			= 	Date::where('id', '=', $appointment->date_id)->get()->first();
-
-					return $this->apiController->respond([
-						'appointment' 	=> [
-							"{$this->secClass}_name"		=>	$secClass->fname.' '.$secClass->lname,
-							"{$this->secClass}_username"	=>	$secClass->id,
-							'canceled'						=>	(bool)$appointment->deleted,
-							'time' 							=>	$appointment->time,
-							'date'							=>	$date->date
-						]
-					]);
+		if($this->checkToken(Input::get('token'), $username) != false){
+			$appointment    =	Appointment::find($appointmentId);
+			if($appointment->count()){
+				if($this->secType == 'barber'){
+					$secType = $this->getSecondaryUser($appointment->barber_id);
+				}else if($this->secType == 'client'){
+					$secType = $this->getSecondaryUser($appointment->client_id);
 				}
-				return $this->apiController->respondNotFound('Appointment is not found or cancelled or expired.');
+				$date 	= 	Date::where('id', '=', $appointment->date_id)->get()->first();
+
+				return $this->apiController->respond([
+					'appointment' 	=> [
+						//"saloon_name"				=>	$secType->shop_name,
+						"{$this->secType}_name"		=>	$secType->fname.' '.$secType->lname,
+						"{$this->secType}_username"	=>	$secType->username,
+						'canceled'					=>	(bool)$appointment->deleted,
+						'time' 						=>	$appointment->time,
+						'date'						=>	$date->date
+					]
+				]);
 			}
+			return $this->apiController->respondNotFound('Appointment is cancelled or expired.');
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);	
 	}
@@ -144,35 +134,24 @@ abstract class AppointmentsController extends TokensController {
 	 */
 	public function destroy($username, $appointmentId)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$user = $this->getMainUser($username);
+		if($this->checkToken(Input::get('token'), $username) != false){
+			$appointment    = 	Appointment::find($appointmentId);
 
-			if($user->count()){
-				$appointment    = 	Appointment::where('id', '=', $appointmentId)
-										->where("{$this->mainClass}_id", '=', $user->id)->where('deleted', '=', 0)->get();
+			if($appointment->count()){
+				$appointment->deleted 	= 1;
+				$appointment->save();
 
-				if($appointment->count()){
-					$appointment 			= $appointment->first();
-					$appointment->deleted 	= 1;
-					$appointment->save();
-
-					return $this->apiController->respond([
-						'message' 	=>	'Appointment has been successfully cancelled.',
-						'cancelled'	=>	(bool)$appointment->deleted
-					]);
-				}
-				return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
+				return $this->apiController->respond([
+					'message' 	=>	'Appointment has been successfully cancelled.',
+					'cancelled'	=>	(bool)$appointment->deleted
+				]);
 			}
-			return $this->apiController->respondNotFound('user does not exist.');
+			return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);
 	}
-
-	abstract public function getMainUser($username);
-
-	abstract public function getSecondaryUser($id);
 }

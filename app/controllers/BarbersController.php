@@ -1,7 +1,7 @@
 <?php
 use \HairConnect\Transformers\BarbersTransformer;
 use \HairConnect\Transformers\ImagesTransformer;
-use \HairConnect\Services\BarberService;
+use \HairConnect\Services\ProfileService;
 use \HairConnect\Validators\ValidationException;
 
 class BarbersController extends TokensController {
@@ -27,17 +27,17 @@ class BarbersController extends TokensController {
 	 * [$barberService description]
 	 * @var [type]
 	 */
-	protected $barberService;
+	protected $profileService;
 
 	/**
 	 * [__construct description]
 	 * @param BarbersTransformer $barbersTransformer [description]
 	 */
-	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController, BarberService $barberService){
+	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController, ProfileService $profileService){
 		$this->barbersTransformer 	=	$barbersTransformer;
 		$this->imagesTransformer 	=	$imagesTransformer;
 		$this->apiController 		=	$apiController;
-		$this->barberService 		=	$barberService;
+		$this->profileService 		=	$profileService;
 	}
 	
 	/**
@@ -47,28 +47,20 @@ class BarbersController extends TokensController {
 	 */
 	public function index()
 	{
-		if($this->checkToken(Input::get('token'))){
-			$limit		=	Input::get('limit') ?: 5;
-	        $barbers 	= 	Barber::paginate($limit);
-	        $total 		=	$barbers->getTotal();
+		$limit		=	Input::get('limit') ?: 5;
+        $barbers 	= 	User::ofType('barber')->paginate($limit);
+        $total 		=	$barbers->getTotal();
 
-	        return $this->apiController->respond([
-	            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
-	            'paginator'	=>	[
-	            	'total_count'	=>	$total,	
-	            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
-	            	'current_page'	=>	$barbers->getCurrentPage(),
-	            	'limit'			=>	(int)$limit,
-	            	'prev'			=>	$barbers->getLastPage()
-	            ]
-	        ]);
-		}
-		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+        return $this->apiController->respond([
+            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
+            'paginator'	=>	[
+            	'total_count'	=>	$total,	
+            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
+            	'current_page'	=>	$barbers->getCurrentPage(),
+            	'limit'			=>	(int)$limit,
+            	'prev'			=>	$barbers->getLastPage()
             ]
         ]);
-		
 	}
 
 	/**
@@ -79,21 +71,17 @@ class BarbersController extends TokensController {
 	 */
 	public function show($username)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$barber	   =	User::findByUsernameOrFail($username)->barber;
-			if($barber->count()){
-				$hsi	= 	HairStyleImages::where('barber_id', '=', $barber->id)->get();
+		if( ($barber = $this->checkToken(Input::get('token'), $username)) != false){			
+			$hsi	= 	HairStyleImages::where('user_id', '=', $barber->id)->get();
 
-				return $this->apiController->respond([
-					'details' 			=> 	$this->barbersTransformer->transform($barber),
-					'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
-				]);
-			}
-			return $this->apiController->respondNotFound('Barber cannot be found or the account is deactivated.');
+			return $this->apiController->respond([
+				'details' 			=> 	$this->barbersTransformer->transform($barber),
+				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
+			]);
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);
 	}
@@ -106,9 +94,9 @@ class BarbersController extends TokensController {
 	 */
 	public function update($username)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
+		if($this->checkToken(Input::get('token'), $username) != false){
 			try{
-				$barberDetails = $this->barberService->update($username, Input::all());
+				$barberDetails = $this->profileService->update($username, Input::all());
 
 				return $this->apiController->respond([
 					'message'	=>	'Profile info have been updated.',
@@ -119,8 +107,8 @@ class BarbersController extends TokensController {
 			}
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);
 	}
@@ -133,42 +121,35 @@ class BarbersController extends TokensController {
 	 */
 	public function destroy($username)
 	{
-		if($this->checkToken(Input::get('token'), $username)){
-			$barber    =    User::findByUsernameOrFail($username)->barber;
-			if($barber->count()){
-				$barber->active		=	0;
-				$barber->deleted	=	0;
-				$barber->save();
+		if(( $barber = $this->checkToken(Input::get('token'), $username) != false)){
+			$barber->online			=	0;
+			$barber->deactivated	=	0;
+			$barber->save();
 
-				return $this->apiController->respond([
-					'message' 	=> 'Account has been successfully deactivated.',
-					'activate'	=>	(bool)$barber->deleted
-				]);
-			}
-			return $this->apiController->respondNotFound('Barber not registered or deactivated.');
+			return $this->apiController->respond([
+				'message' 	=> 'Account has been successfully deactivated.',
+				'activate'	=>	(bool)$barber->deleted
+			]);
 		}
 		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
+			'errors' => [
+            	'message' => 'Invalid token or User cannot be found.'
             ]
         ]);
 	}
 
 	public function search()
 	{
-		if(Input::get('name')){
-			$name = explode(' ', Input::get('name'));
+		$name = explode(' ', Input::get('name'));
 
-			if(count($name) == 1){
-				$name[1] = Input::get('name');
-			}
-		}else{
-			$name = ['', ''];
+		if(count($name) == 1){
+			$name[1] = Input::get('name');
 		}
-
-		$barber = Barber::orWhere('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+		$barber = User::where('fname', 'LIKE', '%'.$name[0].'%')
+					->orWhere('lname', 'LIKE', '%'.$name[1].'%')
 					->orWhere('zip', '=', Input::get('zip'))
-					->orWhere('address', 'LIKE', '%'.Input::get('city').'%')->get();
+					->orWhere('address', '=', Input::get('city'))->ofType('barber')
+					->get();
 
 		return $this->apiController->respond([
             'data' 		=> 	$this->barbersTransformer->transformCollection($barber->all())

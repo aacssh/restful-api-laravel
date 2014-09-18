@@ -3,7 +3,7 @@ namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
-class BarberService{
+class ProfileService{
 
 	/**
 	 * [$validator description]
@@ -19,7 +19,8 @@ class BarberService{
 		'fname'			=> 	'required|Alpha',
 		'lname'			=>	'required|Alpha',
 		'contact_no'	=>	'required|numeric',
-		'address'		=>	'required',
+		'city'			=>	'required',
+		'state'			=>	'required',
 		'email'			=>	'required|email'
 	];
 
@@ -27,11 +28,11 @@ class BarberService{
 	 * [$barber description]
 	 * @var object
 	 */
-	private $barberDetails;
+	private $profileDetails;
 
 	/**
 	 * [__construct description]
-	 * @param BarberValidator $barberValidator [description]
+	 * @param ProfileValidator $profileValidator [description]
 	 */
 	function __construct(Validator $validator){
 		$this->validator = $validator;
@@ -45,19 +46,16 @@ class BarberService{
 	 */
 	private function save($username, array $attributes)
 	{
-		$user	=	\User::findByUsernameOrFail($username);
-		$barber =	$user->barber;
+		$profile	=	\User::findByUsernameOrFail($username);
 
-		if($barber->count()){
-			$barber->fname 		 = 	$attributes['fname'];
-			$barber->lname 		 = 	$attributes['lname'];
-			$barber->contact_no  = 	$attributes['contact_no'];
-			$barber->address 	 =	$attributes['address'];
-			$barber->save();
-
-			$user->email 		 =	$attributes['email'];
-			$user->save();
-			$this->barberDetails =  $barber;
+		if($profile->count()){
+			$profile->fname 		 = 	$attributes['fname'];
+			$profile->lname 		 = 	$attributes['lname'];
+			$profile->contact_no  = 	$attributes['contact_no'];
+			$profile->address 	 =	$attributes['city'].', '.$attributes['state'];
+			$profile->email 		 =	$attributes['email'];
+			$profile->save();
+			$this->profileDetails =  $profile;
 			return true;
 		}
 		return false;
@@ -73,9 +71,9 @@ class BarberService{
 	{
 		if($this->validator->isValid($attributes, $this->rules)){
 			if($this->save($username, $attributes)){
-				return $this->barberDetails;
+				return $this->profileDetails;
 			}
 		}
-		throw new ValidationException('Barber validation failed', $this->validator->getErrors());
+		throw new ValidationException('Profile validation failed', $this->validator->getErrors());
 	}
 }

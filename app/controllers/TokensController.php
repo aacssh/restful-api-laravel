@@ -11,9 +11,8 @@ class TokensController extends \BaseController{
 	public function checkToken($token, $username)
 	{
 		if(!$this->isNull($token)){
-			if(User::findByTokenAndUsernameOrFail($token, $username) != false){
-				dd(User::findByTokenAndUsernameOrFail($token, $username));
-				return true;
+			if(($user = User::findByTokenAndUsernameOrFail($token, $username)) != false){
+				return $user;
 			}
 		}
 		return false;
