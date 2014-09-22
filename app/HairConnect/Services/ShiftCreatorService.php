@@ -3,16 +3,20 @@ namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
+/**
+ * Class ShiftCreatorService
+ * @package HairConnect\Services
+ */
 class ShiftCreatorService{
 
 	/**
-	 * [$validator description]
-	 * @var [type]
+	 * Store the object of Validator class
+	 * @var object
 	 */
 	protected $validator;
 
 	/**
-	 * [$rules description]
+	 * Validation rules for shift
 	 * @var array
 	 */
 	protected $rules =	[
@@ -23,25 +27,25 @@ class ShiftCreatorService{
 	];
 
 	/**
-	 * [$shift description]
-	 * @var [type]
+	 * Stores shift information
+	 * @var object
 	 */
 	private $shiftDetails;
 
 	/**
-	 * [__construct description]
-	 * @param ShiftValidator $validator [description]
+	 * Construct service
+	 * @param Validator $validator
 	 */
 	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
 	/**
-	 * [save description]
-	 * @param  [type] $username   [description]
-	 * @param  array  $attributes [description]
-	 * @param  [type] $shiftId    [description]
-	 * @return [type]             [description]
+	 * Saves shift's data into database
+	 * @param  string $username  
+	 * @param  array  $attributes
+	 * @param  int $shiftId   
+	 * @return boolean           
 	 */
 	private function save($username, array $attributes, $shiftId = null){
 		$barber = \User::findByUsernameOrFail($username);
@@ -63,15 +67,28 @@ class ShiftCreatorService{
 		return true;
 	}
 
+	/**
+	 * Makes a new shift for barber
+	 * @param  string $username  
+	 * @param  array  $attributes
+	 * @return boolean       
+	 */
 	public function make($username, array $attributes)
 	{
 		// Validate data
 		if($this->validator->isValid($attributes, $this->rules)){
 			return $this->save($username, $attributes);
 		}
-		throw new ValidationException('Shift validation failed', $this->validator->getErrors());
+		throw new ValidationException('Invalid arguments passed.');
 	}
 
+	/**
+	 * Updates shift's data
+	 * @param  string $username
+	 * @param  int $shiftId 
+	 * @param  array  $attributes
+	 * @return object
+	 */
 	public function update($username, $shiftId, array $attributes)
 	{
 		// Validate data
@@ -79,6 +96,6 @@ class ShiftCreatorService{
 			$this->save($username, $attributes, $shiftId);
 			return $this->shiftDetails;
 		}
-		throw new ValidationException('Shift validation failed', $this->validator->getErrors());
+		throw new ValidationException('Invalid arguments passed.');
 	}
 }

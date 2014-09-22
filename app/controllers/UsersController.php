@@ -1,31 +1,35 @@
 <?php
 use \HairConnect\Services\UserService;
+use \HairConnect\Transformers\UsersTransformer;
 use \HairConnect\Validators\ValidationException;
 
-class UsersController extends \BaseController {
+class UsersController extends TokensController {
 
     /**
-     * [$userService description]
-     * @var [type]
+     * This stores the object of Service class
+     * @var object
      */
     protected $userService;
 
     /**
-     * [$apiController description]
+     * This stores the object of ApiController class
      * @var [type]
      */
     protected $apiController;
 
     /**
-     * @param UsersTransformer $usersTransformer
+     * This constructor injects the dependencies of the class
+     * @param UserService   $userService  
+     * @param APIController $apiController
      */
-    public function __construct(UserService $userService, APIController $apiController){
+    public function __construct(UserService $userService, APIController $apiController, UsersTransformer $usersTransformer){
         $this->userService 		= $userService;
         $this->apiController 	= $apiController;
+        $this->usersTransformer = $usersTransformer;
     }
 
 	/**
-	 * Store a newly created resource in storage.
+	 * This function stores a newly created resource(User in this application) in database.
 	 *
 	 * @return Response
 	 */
@@ -34,102 +38,91 @@ class UsersController extends \BaseController {
 		try{
         	$this->userService->make(Input::all());
         }catch(ValidationException $e){
-        	return $this->apiController->respondInvalidParameters($e->getErrors());
+        	return $this->apiController->respondInvalidParameters($e->getMessage());
         }
-
-        return $this->apiController->respond([
-			'message'		=>	'User has been successfully registered.'
-		]);
-	}
-
-	public function login()
-	{
-		try{
-        	if(!$this->userService->login(Input::all())){
-        		return $this->apiController->respond([
-        			'error' => [
-						'message' => 'Password or email does not match.'
-					]
-				]);
-        	}
-        }catch(ValidationException $e){
-        	return $this->apiController->respondInvalidParameters($e->getErrors());
-        }
-        return $this->apiController->respond([
-			'message' 		=> 'Successfully logged in.',
-			'access_token' 	=> $this->userService->getToken()
-		]);
+        return $this->apiController->respondSuccessWithDetails(
+        	'User has been successfully registered.', $this->usersTransformer->transform($this->userService->getUserDetails())
+        );
 	}
 
 	/**
-	 * Remove the specified resource from storage.
+	 * This function logs in user into the system
+	 * @return Response
+	 */
+	public function login()
+	{
+		try{
+        	$this->userService->login(Input::all());
+        }catch(ValidationException $e){
+        	return $this->apiController->respondInvalidParameters($e->getMessage());
+        }
+        return $this->apiController->respondSuccessWithDetails(
+        	'Successfully logged in.', $this->usersTransformer->transform($this->userService->getUserDetails())
+        );
+	}
+
+	/**
+	 * This function logs out the user from the system
 	 *
-	 * @param  int  $id
 	 * @return Response
 	 */
 	public function destroy()
 	{
-		if(is_object($token = User::findByTokenAndUsernameOrFail(Input::get('token'), Input::get('username')))){
+		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
 			$token->access_token = NULL;
-
 			if($token->save()){
-				return $this->apiController->respond([
-					'message' => 'Successfully logged out.'
-				]);
+				return $this->apiController->respondSuccess('Successfully logged out.');
 			}
 		}
-		return $this->apiController->respond([
-			'message' => 'Could not logged out. Try again'
-		]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
+	/**
+	 * This function updates the password of a user
+	 * @return Response
+	 */
 	public function update()
 	{
-		if(is_object($token = User::findByTokenAndUsernameOrFail(Input::get('token'), Input::get('username')))){
+		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
 			try{
-				if(!$this->userService->update(Input::all())){
-					return $this->apiController->respondNotFound('Invalid old password.');
-				}
+				$this->userService->update(Input::all());
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getErrors());
+				return $this->apiController->respondInvalidParameters($e->getMessage());
 			}
-			return $this->apiController->respond([
-				'message' => 'Password successfully changed.'
-			]);
+			return $this->apiController->respondSuccess('Password successfully changed.');
 		}
-		return $this->apiController->respond([
-			'error' => [			
-            	'message' => 'Invalid token'
-            ]
-        ]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
+	/**
+	 * This function generate a new password and sends it to user' email along with an activation link
+	 * @return Response
+	 */
 	public function forgotPassword()
 	{
 		try{
 			if(!$this->userService->forgotPassword(Input::all())){
-				return $this->apiController->respond([
-					'message' => 'Email does not exist.'
-				]);
+				return $this->apiController->respondInvalidParameters(['Email does not exist.']);
 			}
 		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());
+			return $this->apiController->respondInvalidParameters($e->getMessage());
 		}
-		return $this->apiController->respond([
-			'message' => 'Check your email for new password.'
-		]);
+		return $this->apiController->respondSuccess('Check your email for new password.');
 	}
 
+	/**
+	 * This function executes when use clicks the activation link sent to his/her email. 
+	 * This function  resets old password with new password sent to email.
+	 * @param  string $code
+	 * @return Response
+	 */
 	public function recover($code)
 	{
 		try{
 			$this->userService->recover(Input::all(), $code);
 		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getErrors());
+			return $this->apiController->respondInvalidParameters($e->getMessage());
 		}
-
-		return $this->apiController->respond([
-			'message' => 'Your account has been recovered. Sign in with your new password'
-		]);
+		return $this->apiController->respondSuccess('Your account has been recovered. Sign in with your new password');
 	}
 }

@@ -1,13 +1,17 @@
 <?php
 
 class Shift extends \Eloquent {
-    protected $fillable 	= 	['barber_id', 'start_time', 'end_time', 'time_gap', 'deleted'];
-    protected $table 		=	'shifts';
 
-    /*
-    public function barber()
-    {
-    	return $this->belongsTo('Barber', 'barber_id');
-    }
-    */
+	/**
+     * This variable specifies which attributes should be guarded against mass-assignable.
+     * @var array
+     */
+    protected $fillable = ['barber_id', 'start_time', 'end_time', 'time_gap', 'deleted'];
+
+    /**
+	 * The database table used by the model.
+	 *
+	 * @var string
+	 */
+    protected $table = 'shifts';
 }

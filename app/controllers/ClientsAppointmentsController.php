@@ -6,23 +6,29 @@ use \HairConnect\Validators\ValidationException;
 class ClientsAppointmentsController extends AppointmentsController{
 
 	/**
-	 * [$mainClassType description]
-	 * @var [type]
+	 * Primary user type of the controller
+	 * @var string
 	 */
-	protected $mainType = 'client';
+	protected $mainUserType = 'client';
 
 	/**
-	 * [$secType description]
-	 * @var [type]
+	 * Secondary user type of the controller
+	 * @var string
 	 */
-	protected $secType = 'barber';
+	protected $secUserType = 'barber';
 
 	/**
-	 * [$appointmentService description]
-	 * @var [type]
+	 * Stores the object of AppointmentService class
+	 * @var object
 	 */
 	protected $appointmentService;
 
+	/**
+	 * Prepare the object of the controller for use
+	 * @param AppointmentsTransformer $appointmentsTransformer
+	 * @param APIController           $apiController          
+	 * @param AppointmentService      $appointmentService     
+	 */
 	function __construct(AppointmentsTransformer $appointmentsTransformer, APIController $apiController, AppointmentService $appointmentService){
 		parent::__construct($appointmentsTransformer, $apiController);
 		$this->appointmentService = $appointmentService;
@@ -35,22 +41,16 @@ class ClientsAppointmentsController extends AppointmentsController{
 	 */
 	public function store($username)
 	{	
-		if($this->checkToken(Input::get('token'), $username) != false){
+		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
 				if($this->appointmentService->make($username, Input::all())){
-					return $this->apiController->respond([
-						'message'	=>	'Appointment has been booked in your name.'
-					]);	
+					return $this->apiController->respondSuccess('Appointment has been booked in your name.');
 				}
 				return $this->apiController->respondNotFound('Appointment cannot be saved. Are you a client?');
 			}catch(ValidationException $e){
 				return $this->apiController->respondInvalidParameters($e->getErrors());
 			}
 		}
-		return $this->apiController->respond([
-			'errors' => [
-            	'message' => 'Invalid token or User cannot be found.'
-            ]
-        ]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }

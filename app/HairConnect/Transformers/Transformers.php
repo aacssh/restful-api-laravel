@@ -1,10 +1,14 @@
 <?php
 namespace HairConnect\Transformers;
 
+/**
+ * Abstract Class BarbersTransformer
+ * @package HairConnect\Transformers
+ */
 abstract class Transformers{
     
     /**
-     * Transforms a collection of data
+     * Transformss a collection of data into json
      * @param array $items
      */
     public function transformCollection(array $items){
@@ -12,8 +16,9 @@ abstract class Transformers{
     }
 
     /**
-     * @param $items
-     * @return mixed
+     * Transformss a set of data into json
+     * @param object $items
+     * @return array
      */
     public abstract function transform($items);
 }

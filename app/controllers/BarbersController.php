@@ -6,32 +6,35 @@ use \HairConnect\Validators\ValidationException;
 
 class BarbersController extends TokensController {
 	/**
-	 * [$barbersTransformer description]
-	 * @var [type]
+	 * Stores object of BarbersTransformer
+	 * @var BarbersTransformer
 	 */
 	protected $barbersTransformer;
 
 	/**
-	 * [$imagesTransformer description]
-	 * @var [type]
+	 * Stores object of ImagesTransformer
+	 * @var ImagesTransformer
 	 */
 	protected $imagesTransformer;
 
 	/**
-	 * [$apiController description]
-	 * @var [type]
+	 * Stores object of APIController
+	 * @var APIController
 	 */
 	protected $apiController;
 
 	/**
-	 * [$barberService description]
-	 * @var [type]
+	 * Stores object of ProfileService
+	 * @var ProfileService
 	 */
 	protected $profileService;
 
 	/**
-	 * [__construct description]
-	 * @param BarbersTransformer $barbersTransformer [description]
+	 * Prepare the object of the controller for use
+	 * @param BarbersTransformer $barbersTransformer
+	 * @param ImagesTransformer  $imagesTransformer 
+	 * @param APIController      $apiController     
+	 * @param ProfileService     $profileService    
 	 */
 	function __construct(BarbersTransformer $barbersTransformer, ImagesTransformer $imagesTransformer, APIController $apiController, ProfileService $profileService){
 		$this->barbersTransformer 	=	$barbersTransformer;
@@ -47,9 +50,9 @@ class BarbersController extends TokensController {
 	 */
 	public function index()
 	{
-		$limit		=	Input::get('limit') ?: 5;
-        $barbers 	= 	User::ofType('barber')->paginate($limit);
-        $total 		=	$barbers->getTotal();
+		$limit	 = Input::get('limit') ?: 5;
+		$barbers = User::ofType('barber')->paginate($limit);
+		$total 	 = $barbers->getTotal();
 
         return $this->apiController->respond([
             'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
@@ -71,19 +74,16 @@ class BarbersController extends TokensController {
 	 */
 	public function show($username)
 	{
-		if( ($barber = $this->checkToken(Input::get('token'), $username)) != false){			
+		if( ($barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
 			$hsi	= 	HairStyleImages::where('user_id', '=', $barber->id)->get();
 
-			return $this->apiController->respond([
-				'details' 			=> 	$this->barbersTransformer->transform($barber),
+			$barberDetailsWithHairStyleImages = array_merge($this->barbersTransformer->transform($barber), [
 				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
 			]);
+
+			return $this->apiController->respondSuccessWithDetails("{$username} data successfully retriveve", $barberDetailsWithHairStyleImages);
 		}
-		return $this->apiController->respond([
-			'errors' => [
-            	'message' => 'Invalid token or User cannot be found.'
-            ]
-        ]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -94,23 +94,15 @@ class BarbersController extends TokensController {
 	 */
 	public function update($username)
 	{
-		if($this->checkToken(Input::get('token'), $username) != false){
+		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
 				$barberDetails = $this->profileService->update($username, Input::all());
-
-				return $this->apiController->respond([
-					'message'	=>	'Profile info have been updated.',
-					'data'		=>	$this->barbersTransformer->transform($barberDetails)
-				]);
 			}catch(ValidationException $e){
 				return $this->apiController->respondInvalidParameters($e->getErrors());
 			}
+			return $this->apiController->respondSuccessWithDetails('Profile info have been updated.', $this->barbersTransformer->transform($barberDetails));
 		}
-		return $this->apiController->respond([
-			'errors' => [
-            	'message' => 'Invalid token or User cannot be found.'
-            ]
-        ]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -121,38 +113,86 @@ class BarbersController extends TokensController {
 	 */
 	public function destroy($username)
 	{
-		if(( $barber = $this->checkToken(Input::get('token'), $username) != false)){
+		if(( $barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username) != false)){
 			$barber->online			=	0;
 			$barber->deactivated	=	0;
 			$barber->save();
 
-			return $this->apiController->respond([
-				'message' 	=> 'Account has been successfully deactivated.',
-				'activate'	=>	(bool)$barber->deleted
-			]);
+			return $this->apiController->respondSuccess('Account has been successfully deactivated.');
 		}
-		return $this->apiController->respond([
-			'errors' => [
-            	'message' => 'Invalid token or User cannot be found.'
-            ]
-        ]);
+		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	public function search()
 	{
-		$name = explode(' ', Input::get('name'));
+		$limit	 = Input::get('limit') ?: 5;
 
-		if(count($name) == 1){
-			$name[1] = Input::get('name');
+		if(($name = Input::get('name')) && !Input::get('city') && !Input::get('zip')){
+			$name = explode(' ', $name);
+
+			if(count($name) == 1){
+				$name[1] = $name[0];
+			}
+			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')
+							->orWhere('lname', 'LIKE', '%'.$name[1].'%')->ofType('barber')->paginate($limit);
 		}
-		$barber = User::where('fname', 'LIKE', '%'.$name[0].'%')
-					->orWhere('lname', 'LIKE', '%'.$name[1].'%')
-					->orWhere('zip', '=', Input::get('zip'))
-					->orWhere('address', '=', Input::get('city'))->ofType('barber')
-					->get();
+		else if(!Input::get('name') && ($city = Input::get('city')) && !Input::get('zip'))
+		{
+			$barbers = User::where('address', 'LIKE', '%'.$city.'%')->ofType('barber')->paginate($limit);
+		}
+		else if(!Input::get('name') && !Input::get('city') && ($zip = Input::get('zip')))
+		{
+			$barbers = User::where('zip', '=', $zip)->ofType('barber')->paginate($limit);
+		}
+		else if(!Input::get('name') && ($city = Input::get('city')) && ($zip = Input::get('zip')))
+		{
+			$barbers = User::where('address', 'LIKE', '%'.$city.'%')->orWhere('zip', '=', $zip)->ofType('barber')->paginate($limit);
+		}
+		else if(($name = Input::get('name')) && ($city = Input::get('city')) && !Input::get('zip'))
+		{
+			$name = explode(' ', $name);
 
-		return $this->apiController->respond([
-            'data' 		=> 	$this->barbersTransformer->transformCollection($barber->all())
+			if(count($name) == 1){
+				$name[1] = $name[0];
+			}
+			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+							->orWhere('address', 'LIKE', '%'.$city.'%')->ofType('barber')->paginate($limit);	
+		}
+		else if(($name = Input::get('name')) && !Input::get('city') && ($zip = Input::get('zip')))
+		{
+			$name = explode(' ', $name);
+
+			if(count($name) == 1){
+				$name[1] = $name[0];
+			}
+			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+							->orWhere('zip', '=', $zip)->ofType('barber')->paginate($limit);	
+		}else if(($name = Input::get('name')) && ($city =Input::get('city')) && ($zip = Input::get('zip'))){
+
+			$name = explode(' ', $name);
+
+			if(count($name) == 1){
+				$name[1] = $name[0];
+			}
+
+			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')
+							->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+							->where('zip', '=', $zip)
+							->where('address', 'LIKE', '%'.$city.'%')->ofType('barber')
+							->paginate($limit);	
+		}
+
+		$total 	 = $barbers->getTotal();
+
+        return $this->apiController->respond([
+            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
+            'paginator'	=>	[
+            	'total_count'	=>	$total,	
+            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
+            	'current_page'	=>	$barbers->getCurrentPage(),
+            	'limit'			=>	(int)$limit,
+            	'prev'			=>	$barbers->getLastPage()
+            ]
         ]);
 	}
 }

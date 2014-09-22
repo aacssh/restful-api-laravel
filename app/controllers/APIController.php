@@ -2,6 +2,7 @@
 use Illuminate\Http\Response as IlluminateResponse;
 
 class APIController extends BaseController{
+	
 	/**
 	 * Contains the status code for each request
 	 * @var integer
@@ -27,7 +28,7 @@ class APIController extends BaseController{
 	}
 
 	/**
-	 * Returns the error message along with not found status code
+	 * Returns an error message along with not found status code
 	 * @param  string $message
 	 * @return mixed
 	 */
@@ -46,7 +47,45 @@ class APIController extends BaseController{
 	}
 
 	/**
-	 * Returns a json formatted data through respond() function
+	 * This returns a success message along with the appropriate status code
+	 * @param  string $message
+	 * @return mixed
+	 */
+	public function respondSuccess($message = 'Success'){
+		return $this->respond([
+			'success' => [
+				'message' => $message,
+				'status_code' => $this->getStatusCode()
+			]
+		]);
+	}
+
+	/**
+	 * This returns a success message and user details along with the appropriate status code
+	 * @param  string $message
+	 * @return mixed
+	 */
+	public function respondSuccessWithDetails($message = 'Success', $userDetails = ''){
+		return $this->setStatusCode(IlluminateResponse::HTTP_OK)->respond([
+			'success' =>[
+				'message' => $message,
+				'status_code' => $this->getStatusCode(),
+				'data'	=>	$userDetails
+			]
+		]);
+	}
+
+	/**
+	 * This returns a success message and user details along with the appropriate status code
+	 * @param  string $message
+	 * @return mixed
+	 */
+	public function respondNoContent($message = 'No content'){
+		return $this->setStatusCode(IlluminateResponse::HTTP_NO_CONTENT)->respondSuccessWithDetails($message);
+	}	
+
+	/**
+	 * This returns an error message along with the status code
 	 * @param  string $messsage
 	 * @return mixed
 	 */
@@ -60,6 +99,7 @@ class APIController extends BaseController{
 	}
 
 	/**
+	 * This returns Internal Server Error message along with the status code
 	 * @param  string $message
 	 * @return mixed
 	 */
@@ -67,19 +107,29 @@ class APIController extends BaseController{
 		return $this->setStatusCode(IlluminateResponse::INTERAL_SERVER_ERROR)->respondWithError($message);
 	}
 
+	/**
+	 * This returns a success message along with the appropriate status code
+	 * @param  string $message
+	 * @return mixed
+	 */
 	public function respondCreated($message = 'Successfully Created'){
-		return $this->setStatusCode(IlluminateResponse::HTTP_CREATED)->respond([
-			'success' =>[
-				'message' => $message,
-				'status_code' => $this->getStatusCode()
-			]
-		]);
+		return $this->setStatusCode(IlluminateResponse::HTTP_CREATED)->respondSuccess($message);
 	}
 
+	/**
+	 * This returns a validation failed message along with the status code
+	 * @param  string $message
+	 * @return mixed
+	 */
 	public function respondInvalidParameters($message = 'Invalid Parameters'){
 		return $this->setStatusCode(IlluminateResponse::HTTP_UNPROCESSABLE_ENTITY)->respondWithError($message);
 	}
 
+	/**
+	 * This returns, along with the status code, an error message that requested data cannot be saved 
+	 * @param  string $message [description]
+	 * @return [type]          [description]
+	 */
 	public function respondNotSaved($message = 'Cannot be saved'){
 		return $this->setStatusCode(304)->respondWithError($message);
 	}

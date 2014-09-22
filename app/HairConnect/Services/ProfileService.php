@@ -3,16 +3,20 @@ namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
+/**
+ * Class ProfileService
+ * @package HairConnect\Services
+ */
 class ProfileService{
 
 	/**
-	 * [$validator description]
-	 * @var [type]
+	 * Store the object of Validator class
+	 * @var object
 	 */
 	protected $validator;
 
 	/**
-	 * [$rules description]
+	 * Validation rules for user profile
 	 * @var array
 	 */
 	protected $rules = [
@@ -25,35 +29,35 @@ class ProfileService{
 	];
 
 	/**
-	 * [$barber description]
+	 * Stores profile information
 	 * @var object
 	 */
 	private $profileDetails;
 
 	/**
-	 * [__construct description]
-	 * @param ProfileValidator $profileValidator [description]
+	 * Construct profile service
+	 * @param Validator $validator
 	 */
 	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
 	/**
-	 * `
-	 * @param  [type] $username   [description]
-	 * @param  array  $attributes [description]
-	 * @return [type]             [description]
+	 * Saves user information into the database
+	 * @param  string $username  
+	 * @param  array  $attributes
+	 * @return boolean
 	 */
 	private function save($username, array $attributes)
 	{
 		$profile	=	\User::findByUsernameOrFail($username);
 
 		if($profile->count()){
-			$profile->fname 		 = 	$attributes['fname'];
-			$profile->lname 		 = 	$attributes['lname'];
+			$profile->fname 	  = 	$attributes['fname'];
+			$profile->lname 	  = 	$attributes['lname'];
 			$profile->contact_no  = 	$attributes['contact_no'];
-			$profile->address 	 =	$attributes['city'].', '.$attributes['state'];
-			$profile->email 		 =	$attributes['email'];
+			$profile->address 	  =	$attributes['city'].', '.$attributes['state'];
+			$profile->email 	  =	$attributes['email'];
 			$profile->save();
 			$this->profileDetails =  $profile;
 			return true;
@@ -62,10 +66,10 @@ class ProfileService{
 	}
 
 	/**
-	 * [update description]
-	 * @param  [type] $username   [description]
-	 * @param  array  $attributes [description]
-	 * @return [type]             [description]
+	 * Updates the profile's data
+	 * @param  string $username  
+	 * @param  array  $attributes
+	 * @return object
 	 */
 	public function update($username, array $attributes)
 	{
@@ -74,6 +78,6 @@ class ProfileService{
 				return $this->profileDetails;
 			}
 		}
-		throw new ValidationException('Profile validation failed', $this->validator->getErrors());
+		throw new ValidationException('Email already exists.');
 	}
 }

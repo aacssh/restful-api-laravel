@@ -2,14 +2,14 @@
 
 class BarbersAppointmentsController extends AppointmentsController {
 	/**
-	 * [$mainType description]
-	 * @var [type]
+	 * Primary user type of the controller
+	 * @var string
 	 */
-	protected $mainType = 'barber';
+	protected $mainUserType = 'barber';
 
 	/**
-	 * [$secType description]
-	 * @var [type]
+	 * Secondary user type of the controller
+	 * @var string
 	 */
-	protected $secType = 'client';
+	protected $secUserType = 'client';
 }

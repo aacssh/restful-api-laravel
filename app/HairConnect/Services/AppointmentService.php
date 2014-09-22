@@ -3,22 +3,26 @@ namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
 use HairConnect\Validators\ValidationException;
 
+/**
+ * Class AppointmentService
+ * @package HairConnect\Services
+ */
 class AppointmentService{
 
 	/**
-	 * [$validator description]
-	 * @var [type]
+	 * Store the object of Validator class
+	 * @var object
 	 */
 	protected $validator;
 
 	/**
-	 * [$appointmentDetails description]
-	 * @var [type]
+	 * Stores the data of appointment
+	 * @var object
 	 */
 	private $appointmentDetails;
 
 	/**
-	 * [$rules description]
+	 * Validation rules for appointment
 	 * @var [type]
 	 */
 	protected $rules = [
@@ -28,19 +32,18 @@ class AppointmentService{
 	];
 
 	/**
-	 * [__construct description]
-	 * @param AppointmentValidator $validator [description]
+	 * Construct the appointment service
+	 * @param AppointmentValidator $validator
 	 */
 	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
 	/**
-	 * [save description]
-	 * @param  [type] $username      [description]
-	 * @param  array  $attributes    [description]
-	 * @param  [type] $appointmentId [description]
-	 * @return [type]                [description]
+	 * Saves appointment data into database
+	 * @param  string $username      
+	 * @param  array  $attributes
+	 * @return boolean               
 	 */
 	public function save($username, array $attributes)
 	{
@@ -65,15 +68,15 @@ class AppointmentService{
 	}
 
 	/**
-	 * [make description]
-	 * @param  [type] $username   [description]
-	 * @param  array  $attributes [description]
-	 * @return [type]             [description]
+	 * Makes a new appointment
+	 * @param  string $username  
+	 * @param  array  $attributes
+	 * @return boolean           
 	 */
 	public function make($username, array $attributes){
 		if($this->validator->isValid($attributes, $this->rules)){
 			return $this->save($username, $attributes);
 		}
-		throw new ValidationException('Appointment validation failed.', $this->validator->getErrors());
+		throw new ValidationException('Invalid arguments passed');
 	}
 }

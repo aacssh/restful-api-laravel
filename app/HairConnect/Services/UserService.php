@@ -6,11 +6,15 @@ use HairConnect\Validators\ValidationException;
 class UserService{
 
 	/**
-	 * [$validator description]
-	 * @var [type]
+	 * Store the object of Validator class
+	 * @var object
 	 */
 	protected $validator;
 
+	/**
+	 * Validation rules for registration
+	 * @var array
+	 */
 	protected $registorRules = [
 		'name'              =>  'required',
         'username' 			=>  'required|max:20|min:2|unique:users',
@@ -20,60 +24,82 @@ class UserService{
         'type'				=>  'required'
 	];
 
+	/**
+	 * Validation rules for login
+	 * @var array
+	 */
 	protected $loginRules = [
 		'email' 	=> 'required|max:50|email',
 		'password' 	=> 'required|min:8'
 	];
 
-	protected $recoverRules = [
+	/**
+	 * Validation rules for password recovery
+	 * @var array
+	 */
+	protected $passwordRecoveryRules = [
 		'email' => 'required|email'
 	];
 
-	protected $updateRules = [
+	/**
+	 * Validation rules for password update
+	 * @var array
+	 */
+	protected $passwordUpdateRules = [
 		'old_password'		=> 'required',
 		'new_password'		=> 'required|min:6',
 		'confirm_password'	=> 'required|same:new_password'
 	];
 
 	/**
-	 * [$accessToken description]
-	 * @var [type]
+	 * Stores user details
+	 * @var object
 	 */
-	protected $accessToken;
+	protected $userDetails;
 
+	/**
+	 * Construct user service
+	 * @param Validator $validator
+	 */
 	function __construct(Validator $validator){
 		$this->validator = $validator;
 	}
 
+	/**
+	 * Makes a new user
+	 * @param  array  $attributes
+	 * @return boolean
+	 */
 	public function make(array $attributes){
-		// Validate data
 		if($this->validator->isValid($attributes, $this->registorRules)){
-			\DB::transaction(function() use ($attributes){
-				$user 			= new \User;
-				$user->email 	= $attributes['email'];
-				$user->username = $attributes['username'];
-				$user->password = \Hash::make($attributes['password']);
-				$user->save();
-		
-				if($attributes['type'] == 'barber'){
-					$type = new \Barber;
-				}else if($attributes['type'] == 'client'){
-					$type = new \Client;
-				}
-				$name = explode(' ', $attributes['name']);
-				$type->user_id 	= $user->id;
-				$type->fname 	= trim($name[0]);
-				$type->lname 	= trim($name[1]);
-				
-				if(!$type->save()){
-				    throw new \Exception('User not created for account');
-				}
-			});
+			$name = explode(' ', $attributes['name'], 2);
+			$accessToken = bin2hex(mcrypt_create_iv(15, MCRYPT_DEV_URANDOM));
+			$user 			= new \User;
+			$user->email 	= $attributes['email'];
+			$user->username = $attributes['username'];
+			$user->password = \Hash::make($attributes['password']);
+			$user->type     = $attributes['type'];
+			$user->fname 	= trim($name[0]);
+			$user->lname 	= trim($name[1]);
+			$user->deactivated = 0;
+			$user->online 	= 1;
+			$user->access_token = $accessToken;
+			
+			if(!$user->save()){
+			    throw new \Exception('User accountnot created.');
+			}
+
+			$this->userDetails = $user;
 			return true;
 		}
-		throw new ValidationException('User\'s details validation failed', $this->validator->getErrors());
+		throw new ValidationException('Username or email is already taken.');
 	}
 
+	/**
+	 * Logs in user
+	 * @param  array  $attributes
+	 * @return boolean
+	 */
 	public function login(array $attributes)
 	{
 		if($this->validator->isValid($attributes, $this->loginRules)){
@@ -81,43 +107,53 @@ class UserService{
 				'email'		=>	$attributes['email'],
 				'password'	=>	$attributes['password']
 			]);
+
 			
 			if($auth){
-				$accessToken = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
-				$saveToken = \User::findByEmailOrFail($attributes['email']);
-				$saveToken->access_token = $accessToken;
+				$accessToken = bin2hex(mcrypt_create_iv(15, MCRYPT_DEV_URANDOM));
+				$user = \User::findByEmailOrFail($attributes['email']);
+				$user->access_token = $accessToken;
 
-				if($saveToken->save()){
+				if($user->save()){
 					$this->accessToken = $accessToken;
+					$this->userDetails = $user;
 					return true;
 				}
 			}
-
-			return false;
 		}
-		throw new ValidationException('Login validation failed', $this->validator->getErrors());
+		throw new ValidationException('Password or email does not match.');
 	}
 
+	/**
+	 * Updates user's password
+	 * @param  array  $attributes 
+	 * @return boolean    
+	 */
 	public function update(array $attributes)
 	{
-		if($this->validator->isValid($attributes, $this->updateRules)){
+		if($this->validator->isValid($attributes, $this->passwordUpdateRules)){
 			$user = \User::find(\Auth::user()->id);
 
 			// Check if the given old password is correct or not
 			if(\Hash::check($attributes['old_password'], $user->getAuthPassword())){
 				$user->password = \Hash::make($attributes['new_password']);
 				if($user->save()){
-					return true;	
+					return true;
 				}
 			}
 			return false;
 		}
-		throw new ValidationException('Valdation failed.', $this->validator->getErrors());
+		throw new ValidationException('Old password is invalid.');
 	}
 
+	/**
+	 * Creates new password and sends a recover link in an email
+	 * @param  array  $attributes
+	 * @return boolean
+	 */
 	public function forgotPassword(array $attributes)
 	{
-		if($this->validator->isValid($attributes, $this->recoverRules)){
+		if($this->validator->isValid($attributes, $this->passwordRecoveryRules)){
 			$user = \User::where('email', '=', $attributes['email']);
 
 			if($user->count()){
@@ -134,11 +170,16 @@ class UserService{
 				}
 				return true;
 			}
-			return false;
 		}
-		throw new ValidationException('Password couldn\'t be reset. Please try again.', $this->validator->getErrors());
+		throw new ValidationException('Email does not exist.');
 	}
 
+	/**
+	 * Recovers user's password when users clicks password recovery link sent in an email by reseting old password with new password
+	 * @param  array  $attributes
+	 * @param  string $code      
+	 * @return boolean
+	 */
 	public function recover(array $attributes, $code)
 	{
 		$user = \User::where('code', '=', $code)->where('password_temp', '!=', '');
@@ -153,11 +194,11 @@ class UserService{
 				return true;	
 			}
 		}
-		return false;
+		throw new ValidationException('Something is wrong with this link.');
 	}
 
-	public function getToken()
+	public function getUserDetails()
 	{
-		return $this->accessToken;
+		return $this->userDetails;
 	}
 }
