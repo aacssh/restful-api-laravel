@@ -9,23 +9,29 @@ class UsersController extends TokensController {
      * This stores the object of Service class
      * @var object
      */
-    protected $userService;
+    protected $service;
 
     /**
      * This stores the object of ApiController class
      * @var [type]
      */
-    protected $apiController;
+    protected $api;
+
+    /**
+     * [$usersTransformer description]
+     * @var [type]
+     */
+    protected $transformer;
 
     /**
      * This constructor injects the dependencies of the class
-     * @param UserService   $userService  
-     * @param APIController $apiController
+     * @param UserService $service  
+     * @param APIResponse $api
      */
-    public function __construct(UserService $userService, APIController $apiController, UsersTransformer $usersTransformer){
-        $this->userService 		= $userService;
-        $this->apiController 	= $apiController;
-        $this->usersTransformer = $usersTransformer;
+    public function __construct(UserService $service, APIResponse $api, UsersTransformer $transformer){
+        $this->service = $service;
+        $this->api = $api;
+        $this->transformer = $transformer;
     }
 
 	/**
@@ -36,12 +42,12 @@ class UsersController extends TokensController {
 	public function register()
 	{
 		try{
-        	$this->userService->make(Input::all());
+        	$this->service->make(Input::all());
         }catch(ValidationException $e){
-        	return $this->apiController->respondInvalidParameters($e->getMessage());
+        	return $this->api->respondInvalidParameters($e->getMessage());
         }
-        return $this->apiController->respondSuccessWithDetails(
-        	'User has been successfully registered.', $this->usersTransformer->transform($this->userService->getUserDetails())
+        return $this->api->respondSuccessWithDetails(
+        	'User has been successfully registered.', $this->transformer->transform($this->service->getUserDetails())
         );
 	}
 
@@ -52,12 +58,12 @@ class UsersController extends TokensController {
 	public function login()
 	{
 		try{
-        	$this->userService->login(Input::all());
+        	$this->service->login(Input::all());
         }catch(ValidationException $e){
-        	return $this->apiController->respondInvalidParameters($e->getMessage());
+        	return $this->api->respondInvalidParameters($e->getMessage());
         }
-        return $this->apiController->respondSuccessWithDetails(
-        	'Successfully logged in.', $this->usersTransformer->transform($this->userService->getUserDetails())
+        return $this->api->respondSuccessWithDetails(
+        	'Successfully logged in.', $this->transformer->transform($this->service->getUserDetails())
         );
 	}
 
@@ -71,10 +77,10 @@ class UsersController extends TokensController {
 		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
 			$token->access_token = NULL;
 			if($token->save()){
-				return $this->apiController->respondSuccess('Successfully logged out.');
+				return $this->api->respondSuccess('Successfully logged out.');
 			}
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -85,13 +91,13 @@ class UsersController extends TokensController {
 	{
 		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
 			try{
-				$this->userService->update(Input::all());
+				$this->service->update(Input::all());
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getMessage());
+				return $this->api->respondInvalidParameters($e->getMessage());
 			}
-			return $this->apiController->respondSuccess('Password successfully changed.');
+			return $this->api->respondSuccess('Password successfully changed.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -101,13 +107,13 @@ class UsersController extends TokensController {
 	public function forgotPassword()
 	{
 		try{
-			if(!$this->userService->forgotPassword(Input::all())){
-				return $this->apiController->respondInvalidParameters(['Email does not exist.']);
+			if(!$this->service->forgotPassword(Input::all())){
+				return $this->api->respondInvalidParameters(['Email does not exist.']);
 			}
 		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getMessage());
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->apiController->respondSuccess('Check your email for new password.');
+		return $this->api->respondSuccess('Check your email for new password.');
 	}
 
 	/**
@@ -119,10 +125,10 @@ class UsersController extends TokensController {
 	public function recover($code)
 	{
 		try{
-			$this->userService->recover(Input::all(), $code);
+			$this->service->recover(Input::all(), $code);
 		}catch(ValidationException $e){
-			return $this->apiController->respondInvalidParameters($e->getMessage());
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->apiController->respondSuccess('Your account has been recovered. Sign in with your new password');
+		return $this->api->respondSuccess('Your account has been recovered. Sign in with your new password');
 	}
 }

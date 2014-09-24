@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Http\Response as IlluminateResponse;
 
-class APIController extends BaseController{
+class APIResponse extends BaseController{
 	
 	/**
 	 * Contains the status code for each request

@@ -51,6 +51,36 @@ App::error(function(Exception $exception, $code)
 	Log::error($exception);
 });
 
+App::missing(function($exception)
+{
+    return Response::json([
+		'error' => [
+			'message' => 'Resource not found!',
+			'status_code' => 404
+		]
+	], 404);
+});
+
+App::error(function(Symfony\Component\HttpKernel\Exception\NotFoundHttpException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => 'Unable to find a route to for the request. ',
+			'status_code' => 404
+		]
+	], 404);
+});
+
+App::error(function(Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => 'Request was made of a resource using a request method not supported by the resource',
+			'status_code' => 405
+		]
+	], 405);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Maintenance Mode Handler
@@ -64,7 +94,12 @@ App::error(function(Exception $exception, $code)
 
 App::down(function()
 {
-	return Response::make("Be right back!", 503);
+	return Response::json([
+		'error' => [
+			'message' => 'Be right back!',
+			'status_code' => 503
+		]
+	], 503);
 });
 
 /*

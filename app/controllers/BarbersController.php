@@ -55,14 +55,18 @@ class BarbersController extends TokensController {
 		$total 	 = $barbers->getTotal();
 
         return $this->apiController->respond([
-            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
-            'paginator'	=>	[
-            	'total_count'	=>	$total,	
-            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
-            	'current_page'	=>	$barbers->getCurrentPage(),
-            	'limit'			=>	(int)$limit,
-            	'prev'			=>	$barbers->getLastPage()
-            ]
+        	'success' => [
+        		'message' => 'Successfulll retriveved',
+        		'status_code' => 200,
+	            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
+	            'paginator'	=>	[
+	            	'total_count'	=>	$total,	
+	            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
+	            	'current_page'	=>	$barbers->getCurrentPage(),
+	            	'limit'			=>	(int)$limit,
+	            	'prev'			=>	$barbers->getLastPage()
+	            ]
+        	]
         ]);
 	}
 
@@ -75,7 +79,7 @@ class BarbersController extends TokensController {
 	public function show($username)
 	{
 		if( ($barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$hsi	= 	HairStyleImages::where('user_id', '=', $barber->id)->get();
+			$hsi	= 	HairStyleImage::where('user_id', '=', $barber->id)->get();
 
 			$barberDetailsWithHairStyleImages = array_merge($this->barbersTransformer->transform($barber), [
 				'hair_style_images'	=>	$this->imagesTransformer->transformCollection($hsi->all())
@@ -125,74 +129,36 @@ class BarbersController extends TokensController {
 
 	public function search()
 	{
-		$limit	 = Input::get('limit') ?: 5;
+		$limit = Input::get('limit') ?: 5;
+		$name = explode(' ', Input::get('name'));
+		$city = Input::get('city');
+		$zip = Input::get('zip');
 
-		if(($name = Input::get('name')) && !Input::get('city') && !Input::get('zip')){
-			$name = explode(' ', $name);
-
-			if(count($name) == 1){
-				$name[1] = $name[0];
-			}
-			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')
-							->orWhere('lname', 'LIKE', '%'.$name[1].'%')->ofType('barber')->paginate($limit);
-		}
-		else if(!Input::get('name') && ($city = Input::get('city')) && !Input::get('zip'))
-		{
-			$barbers = User::where('address', 'LIKE', '%'.$city.'%')->ofType('barber')->paginate($limit);
-		}
-		else if(!Input::get('name') && !Input::get('city') && ($zip = Input::get('zip')))
-		{
-			$barbers = User::where('zip', '=', $zip)->ofType('barber')->paginate($limit);
-		}
-		else if(!Input::get('name') && ($city = Input::get('city')) && ($zip = Input::get('zip')))
-		{
-			$barbers = User::where('address', 'LIKE', '%'.$city.'%')->orWhere('zip', '=', $zip)->ofType('barber')->paginate($limit);
-		}
-		else if(($name = Input::get('name')) && ($city = Input::get('city')) && !Input::get('zip'))
-		{
-			$name = explode(' ', $name);
-
-			if(count($name) == 1){
-				$name[1] = $name[0];
-			}
-			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
-							->orWhere('address', 'LIKE', '%'.$city.'%')->ofType('barber')->paginate($limit);	
-		}
-		else if(($name = Input::get('name')) && !Input::get('city') && ($zip = Input::get('zip')))
-		{
-			$name = explode(' ', $name);
-
-			if(count($name) == 1){
-				$name[1] = $name[0];
-			}
-			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
-							->orWhere('zip', '=', $zip)->ofType('barber')->paginate($limit);	
-		}else if(($name = Input::get('name')) && ($city =Input::get('city')) && ($zip = Input::get('zip'))){
-
-			$name = explode(' ', $name);
-
-			if(count($name) == 1){
-				$name[1] = $name[0];
-			}
-
-			$barbers = User::where('fname', 'LIKE', '%'.$name[0].'%')
-							->orWhere('lname', 'LIKE', '%'.$name[1].'%')
-							->where('zip', '=', $zip)
-							->where('address', 'LIKE', '%'.$city.'%')->ofType('barber')
-							->paginate($limit);	
+		if(count($name) == 1){
+			$name[1] = $name[0];
 		}
 
-		$total 	 = $barbers->getTotal();
+		$barbers = User::ofType('barber')->where(
+					function($query) use ($name, $zip, $city)
+					{
+						$query->where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
+							  ->orWhere('zip', '=', $zip)->orWhere('address', 'LIKE', '%'.$city.'%');
+					})->paginate($limit);
+		$total = $barbers->getTotal();
 
         return $this->apiController->respond([
-            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
-            'paginator'	=>	[
-            	'total_count'	=>	$total,	
-            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
-            	'current_page'	=>	$barbers->getCurrentPage(),
-            	'limit'			=>	(int)$limit,
-            	'prev'			=>	$barbers->getLastPage()
-            ]
+        	'success' => [
+        		'message' => 'Successfulll retriveved',
+        		'status_code' => 200,
+	            'data' 		=> 	$this->barbersTransformer->transformCollection($barbers->all()),
+	            'paginator'	=>	[
+	            	'total_count'	=>	$total,	
+	            	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
+	            	'current_page'	=>	$barbers->getCurrentPage(),
+	            	'limit'			=>	(int)$limit,
+	            	'prev'			=>	$barbers->getLastPage()
+	            ]
+        	]
         ]);
 	}
 }

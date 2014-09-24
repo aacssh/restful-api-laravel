@@ -17,7 +17,7 @@ class HairStyleImageTableSeeder extends Seeder {
 
         foreach(range(1, 10) as $index)
         {
-            HairStyleImages::create([
+            HairStyleImage::create([
             	'user_id' 	=> 	$faker->unique()->randomElement($barber_id),
                 'image'     	=>	$faker->imageUrl(300, 200),
                 'image_title'	=>	$faker->sentence()

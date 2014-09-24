@@ -45,14 +45,18 @@ class ClientsController extends TokensController {
         $total 		=	$clients->getTotal();
 
         return $this->apiController->respond([
-            'data' 	=>	$this->clientsTransformer->transformCollection($clients->all()),
-            'paginator'	=>	[
-            	'total_count'	=>	$total,	
-            	'total_pages'	=>	ceil($total/$clients->getPerPage()),
-            	'current_page'	=>	$clients->getCurrentPage(),
-            	'limit'			=>	(int)$limit,
-            	'prev'			=>	$clients->getLastPage()
-            ]
+        	'success' => [
+        		'message' => 'Successfulll retriveved',
+        		'status_code' => 200,
+	            'data' 	=>	$this->clientsTransformer->transformCollection($clients->all()),
+	            'paginator'	=>	[
+	            	'total_count'	=>	$total,	
+	            	'total_pages'	=>	ceil($total/$clients->getPerPage()),
+	            	'current_page'	=>	$clients->getCurrentPage(),
+	            	'limit'			=>	(int)$limit,
+	            	'prev'			=>	$clients->getLastPage()
+	            ]
+	        ]
         ]);
 	}
 
