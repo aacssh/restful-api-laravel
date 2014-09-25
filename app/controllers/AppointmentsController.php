@@ -7,22 +7,22 @@ abstract class AppointmentsController extends TokensController {
 	 * Stores object of AppointmentsTransformer
 	 * @var ApointmentsTransformer
 	 */
-	protected $appointmentsTransformer;
+	protected $transformer;
 
 	/**
 	 * Stores object of APIController
 	 * @var APIController
 	 */
-	protected $apiController;
+	protected $api;
 
 	/**
 	 * Prepare the object of the controller for use
-	 * @param AppointmentsTransformer $appointmentsTransformer
-	 * @param APIController           $apiController          
+	 * @param AppointmentsTransformer $transformer
+	 * @param APIController           $api 
 	 */
-	function __construct(AppointmentsTransformer $appointmentsTransformer, APIController $apiController){
-		$this->appointmentsTransformer 	= 	$appointmentsTransformer;
-		$this->apiController 			=	$apiController;
+	function __construct(AppointmentsTransformer $transformer, APIResponse $api){
+		$this->transformer = $transformer;
+		$this->api = $api;
 	}
 
 	/**
@@ -43,24 +43,22 @@ abstract class AppointmentsController extends TokensController {
 	public function index($username)
 	{
 		if(($user = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$limit			=	Input::get('limit') ?: 5;
-			$appointments	= 	Appointment::where("{$this->mainUserType}_id", '=', $user->id)->paginate($limit);
-			$totalAppointments 	=	$appointments->getTotal();
+			$limit = Input::get('limit') ?: 5;
+			$appointments =	Appointment::where("{$this->mainUserType}_id", '=', $user->id)->paginate($limit);
+			$totalAppointments = $appointments->getTotal();
 			
 			if($appointments->count()){
 				$appointmentsOfSecUserType = [];
-				foreach ($appointments as $appointment)
-				{
+				foreach ($appointments as $appointment){
 					if($this->secUserType == 'barber'){
 						$secUserType = $this->getSecondaryUserType($appointment->barber_id);
 					}else if($this->secUserType == 'client'){
 						$secUserType = $this->getSecondaryUserType($appointment->client_id);
 					}
-					
+
 					$date =	Date::where('id', '=', $appointment->date_id)->get()->first();
-					
 					array_push($appointmentsOfSecUserType,[
-						'appointment_id'			=>	(int)$appointment->id,
+						'appointment_id' 			=>	(int)$appointment->id,
 						"{$this->secUserType}_name" =>	$secUserType->fname.' '.$secUserType->lname,
 						"{$this->secUserType}_id"	=>	(int)$secUserType->id,
 						'time' 						=>	$appointment->time,
@@ -69,20 +67,20 @@ abstract class AppointmentsController extends TokensController {
 					]);
 				}
 				
-				return $this->apiController->respond([
+				return $this->api->respond([
 					'appointments' 	=> $appointmentsOfSecUserType,
-		            'paginator'		=>	[
-		            	'total_count'	=>	$totalAppointments,	
-		            	'total_pages'	=>	ceil($totalAppointments/$appointments->getPerPage()),
-		            	'current_page'	=>	$appointments->getCurrentPage(),
-		            	'limit'			=>	(int)$limit,
-		            	'prev'			=>	$appointments->getLastPage()
-		            ]
+          'paginator'		=>	[
+          	'total_count'	=>	$totalAppointments,	
+          	'total_pages'	=>	ceil($totalAppointments/$appointments->getPerPage()),
+          	'current_page'	=>	$appointments->getCurrentPage(),
+          	'limit'			=>	(int)$limit,
+          	'prev'			=>	$appointments->getLastPage()
+          ]
 				]);
 			}
-			return $this->apiController->respondNoContent('You have no appointment.');
+			return $this->api->respondNoContent('You have no appointment.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -95,17 +93,17 @@ abstract class AppointmentsController extends TokensController {
 	public function show($username, $appointmentId)
 	{
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
-			$appointment    =	Appointment::find($appointmentId);
+			$appointment = Appointment::find($appointmentId);
 			if($appointment->count()){
 				if($this->secUserType == 'barber'){
 					$secUserType = $this->getSecondaryUserType($appointment->barber_id);
 				}else if($this->secUserType == 'client'){
 					$secUserType = $this->getSecondaryUserType($appointment->client_id);
 				}
-				$date 	= 	Date::where('id', '=', $appointment->date_id)->get()->first();
+				$date =	Date::where('id', '=', $appointment->date_id)->get()->first();
 
-				return $this->apiController->respond([
-					'appointment' 	=> [
+				return $this->api->respond([
+					'appointment' => [
 						//"saloon_name"				=>	$secUserType->shop_name,
 						"{$this->secUserType}_name"		=>	$secUserType->fname.' '.$secUserType->lname,
 						"{$this->secUserType}_username"	=>	$secUserType->username,
@@ -115,9 +113,9 @@ abstract class AppointmentsController extends TokensController {
 					]
 				]);
 			}
-			return $this->apiController->respondNotFound('Appointment does not exist.');
+			return $this->api->respondNotFound('Appointment does not exist.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -134,11 +132,10 @@ abstract class AppointmentsController extends TokensController {
 			if($appointment->count()){
 				$appointment->deleted = 1;
 				$appointment->save();
-
-				return $this->apiController->respondSuccess('Appointment has been successfully cancelled.',);
+				return $this->api->respondSuccess('Appointment has been successfully cancelled.',);
 			}
-			return $this->apiController->respondNotFound('Appointment not found or already cancelled.');
+			return $this->api->respondNotFound('Appointment not found or already cancelled.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }

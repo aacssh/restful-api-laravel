@@ -1,7 +1,7 @@
 <?php
 use \HairConnect\Transformers\AppointmentsTransformer;
 use \HairConnect\Services\AppointmentService;
-use \HairConnect\Validators\ValidationException;
+use \HairConnect\Exceptions\ValidationException;
 
 class ClientsAppointmentsController extends AppointmentsController{
 
@@ -21,17 +21,17 @@ class ClientsAppointmentsController extends AppointmentsController{
 	 * Stores the object of AppointmentService class
 	 * @var object
 	 */
-	protected $appointmentService;
+	protected $service;
 
 	/**
 	 * Prepare the object of the controller for use
 	 * @param AppointmentsTransformer $appointmentsTransformer
-	 * @param APIController           $apiController          
-	 * @param AppointmentService      $appointmentService     
+	 * @param APIController           $api
+	 * @param AppointmentService      $service
 	 */
-	function __construct(AppointmentsTransformer $appointmentsTransformer, APIController $apiController, AppointmentService $appointmentService){
-		parent::__construct($appointmentsTransformer, $apiController);
-		$this->appointmentService = $appointmentService;
+	function __construct(AppointmentsTransformer $transformer, APIResponse $api, AppointmentService $service){
+		parent::__construct($transformer, $api);
+		$this->service = $service;
 	}
 
 	/**
@@ -43,14 +43,14 @@ class ClientsAppointmentsController extends AppointmentsController{
 	{	
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
-				if($this->appointmentService->make($username, Input::all())){
-					return $this->apiController->respondSuccess('Appointment has been booked in your name.');
+				if($this->service->make($username, Input::all())){
+					return $this->api->respondSuccess('Appointment has been booked in your name.');
 				}
-				return $this->apiController->respondNotFound('Appointment cannot be saved. Are you a client?');
+				return $this->api->respondNotFound('Appointment cannot be saved. Are you a client?');
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getErrors());
+				return $this->api->respondInvalidParameters($e->getErrors());
 			}
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }

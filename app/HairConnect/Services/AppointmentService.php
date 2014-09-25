@@ -1,7 +1,7 @@
 <?php
 namespace HairConnect\Services;
-use HairConnect\Validators\Validator;
-use HairConnect\Validators\ValidationException;
+use HairConnect\Validators\AppointValidation;
+use HairConnect\Exceptions\ValidationException;
 
 /**
  * Class AppointmentService
@@ -22,20 +22,10 @@ class AppointmentService{
 	private $appointmentDetails;
 
 	/**
-	 * Validation rules for appointment
-	 * @var [type]
-	 */
-	protected $rules = [
-		'barber_id'    =>	'required',
-		'time'		   =>	'required',
-		'date'		   =>	'required'
-	];
-
-	/**
 	 * Construct the appointment service
 	 * @param AppointmentValidator $validator
 	 */
-	function __construct(Validator $validator){
+	function __construct(AppointmentValidation $validator){
 		$this->validator = $validator;
 	}
 
@@ -50,17 +40,15 @@ class AppointmentService{
 		$client = \User::findByUsernameOrFail($username)->client;
 
 		if($client->count()){
-			$date =	\Date::where('date', '=', $attributes['date'])->get()->first();
-			
+			$date =	\Date::where('date', '=', $attributes['date'])->get()->first();			
 			$appointment = new \Appointment;
 			$appointment->barber_id = $attributes['barber_id'];
 			dd($attributes['barber_id']);
-			$appointment->time 	    = $attributes['time'].':00';
+			$appointment->time = $attributes['time'].':00';
 			$appointment->client_id = $client->id;
-			$appointment->deleted 	= 0;
-			$appointment->date_id 	= $date->id;
+			$appointment->deleted = 0;
+			$appointment->date_id = $date->id;
 			$appointment->save();
-
 			$this->appointmentDetails = $appointment;
 			return true;
 		}
@@ -74,7 +62,7 @@ class AppointmentService{
 	 * @return boolean           
 	 */
 	public function make($username, array $attributes){
-		if($this->validator->isValid($attributes, $this->rules)){
+		if($this->validator->validateAppointmentAttribtes($attributes){
 			return $this->save($username, $attributes);
 		}
 		throw new ValidationException('Invalid arguments passed');

@@ -5,6 +5,7 @@ class DatabaseSeeder extends Seeder {
 	private $tables = [
 		'appointments', 'shifts', 'dates', 'hair_style_images', 'users'
 	];
+
 	/**
 	 * Run the database seeds.
 	 *

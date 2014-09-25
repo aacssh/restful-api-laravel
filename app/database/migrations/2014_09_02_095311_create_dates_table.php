@@ -12,12 +12,11 @@ class CreateDatesTable extends Migration {
 	 */
 	public function up()
 	{
-        Schema::create('dates', function(Blueprint $table) {
-            $table->increments('id');
+    Schema::create('dates', function(Blueprint $table) {
+      $table->increments('id');
 			$table->date('date');
-        });
+    });
 	}
-
 
 	/**
 	 * Reverse the migrations.
@@ -26,7 +25,6 @@ class CreateDatesTable extends Migration {
 	 */
 	public function down()
 	{
-	    Schema::drop('dates');
+	  Schema::drop('dates');
 	}
-
 }

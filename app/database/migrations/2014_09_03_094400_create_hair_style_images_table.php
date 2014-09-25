@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
 class CreateHairStyleImagesTable extends Migration {
-	
 
 	/**
 	 * Run the migrations.
@@ -13,16 +12,15 @@ class CreateHairStyleImagesTable extends Migration {
 	 */
 	public function up()
 	{
-        Schema::create('hair_style_images', function(Blueprint $table) {
-            $table->increments('id');
+    Schema::create('hair_style_images', function(Blueprint $table) {
+      $table->increments('id');
 			$table->integer('user_id')->unsigned();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+      $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 			$table->binary('image');
 			$table->string('image_title');
 			$table->timestamps();
-        });
+    });
 	}
-
 
 	/**
 	 * Reverse the migrations.
@@ -31,7 +29,6 @@ class CreateHairStyleImagesTable extends Migration {
 	 */
 	public function down()
 	{
-	    Schema::drop('hair_style_images');
+	  Schema::drop('hair_style_images');
 	}
-
 }

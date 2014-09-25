@@ -1,7 +1,7 @@
 <?php
 namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
-use HairConnect\Validators\ValidationException;
+use HairConnect\Exceptions\ValidationException;
 
 /**
  * Class ProfileService
@@ -14,19 +14,6 @@ class ProfileService{
 	 * @var object
 	 */
 	protected $validator;
-
-	/**
-	 * Validation rules for user profile
-	 * @var array
-	 */
-	protected $rules = [
-		'fname'			=> 	'required|Alpha',
-		'lname'			=>	'required|Alpha',
-		'contact_no'	=>	'required|numeric',
-		'city'			=>	'required',
-		'state'			=>	'required',
-		'email'			=>	'required|email'
-	];
 
 	/**
 	 * Stores profile information
@@ -50,16 +37,16 @@ class ProfileService{
 	 */
 	private function save($username, array $attributes)
 	{
-		$profile	=	\User::findByUsernameOrFail($username);
+		$profile = \User::findByUsernameOrFail($username);
 
 		if($profile->count()){
-			$profile->fname 	  = 	$attributes['fname'];
-			$profile->lname 	  = 	$attributes['lname'];
-			$profile->contact_no  = 	$attributes['contact_no'];
-			$profile->address 	  =	$attributes['city'].', '.$attributes['state'];
-			$profile->email 	  =	$attributes['email'];
+			$profile->fname = $attributes['fname'];
+			$profile->lname = $attributes['lname'];
+			$profile->contact_no = $attributes['contact_no'];
+			$profile->address =	$attributes['city'].', '.$attributes['state'];
+			$profile->email = $attributes['email'];
 			$profile->save();
-			$this->profileDetails =  $profile;
+			$this->profileDetails = $profile;
 			return true;
 		}
 		return false;

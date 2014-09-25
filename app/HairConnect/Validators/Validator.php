@@ -1,5 +1,6 @@
 <?php
 namespace HairConnect\Validators;
+use HairConnect\Exceptions\ValidationException;
 use Validator as V;
 
 /**
@@ -14,13 +15,13 @@ class Validator{
 	 * @param  array   $rules      Valdation rules
 	 * @return boolean
 	 */
-	public function isValid(array $attributes, array $rules)
+	public function isValid(array $attributes, $rules)
 	{
 		$v = V::make($attributes, $rules);
 
 		if($v->fails()){
 			$this->errors = $v->messages();
-			return false;
+			throw new ValidationException('Email or password does not match.');
 		}
 		return true;
 	}

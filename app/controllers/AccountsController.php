@@ -1,9 +1,9 @@
 <?php
-use \HairConnect\Services\UserService;
+use \HairConnect\Services\AccountService;
 use \HairConnect\Transformers\UsersTransformer;
-use \HairConnect\Validators\ValidationException;
+use \HairConnect\Exceptions\ValidationException;
 
-class UsersController extends TokensController {
+class AccountsController extends TokensController {
 
     /**
      * This stores the object of Service class
@@ -28,7 +28,7 @@ class UsersController extends TokensController {
      * @param UserService $service  
      * @param APIResponse $api
      */
-    public function __construct(UserService $service, APIResponse $api, UsersTransformer $transformer){
+    public function __construct(AccountService $service, APIResponse $api, UsersTransformer $transformer){
         $this->service = $service;
         $this->api = $api;
         $this->transformer = $transformer;
@@ -42,13 +42,13 @@ class UsersController extends TokensController {
 	public function register()
 	{
 		try{
-        	$this->service->make(Input::all());
-        }catch(ValidationException $e){
-        	return $this->api->respondInvalidParameters($e->getMessage());
-        }
-        return $this->api->respondSuccessWithDetails(
-        	'User has been successfully registered.', $this->transformer->transform($this->service->getUserDetails())
-        );
+    	$this->service->make(Input::all());
+    }catch(ValidationException $e){
+    	return $this->api->respondInvalidParameters($e->getMessage());
+    }
+    return $this->api->respondSuccessWithDetails(
+    	'User has been successfully registered.', $this->transformer->transform($this->service->getUserDetails())
+    );
 	}
 
 	/**
@@ -58,13 +58,13 @@ class UsersController extends TokensController {
 	public function login()
 	{
 		try{
-        	$this->service->login(Input::all());
-        }catch(ValidationException $e){
-        	return $this->api->respondInvalidParameters($e->getMessage());
-        }
-        return $this->api->respondSuccessWithDetails(
-        	'Successfully logged in.', $this->transformer->transform($this->service->getUserDetails())
-        );
+    	$this->service->login(Input::all());
+    }catch(ValidationException $e){
+    	return $this->api->respondInvalidParameters($e->getMessage());
+    }
+    return $this->api->respondSuccessWithDetails(
+    	'Successfully logged in.', $this->transformer->transform($this->service->getUserDetails())
+    );
 	}
 
 	/**

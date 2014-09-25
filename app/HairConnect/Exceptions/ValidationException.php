@@ -1,5 +1,5 @@
 <?php
-namespace HairConnect\Validators;
+namespace HairConnect\Exceptions;
 use Exception;
 
 /**

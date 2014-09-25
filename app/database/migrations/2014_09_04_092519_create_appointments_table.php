@@ -12,19 +12,18 @@ class CreateAppointmentsTable extends Migration {
 	 */
 	public function up()
 	{
-        Schema::create('appointments', function(Blueprint $table) {
-            $table->increments('id');
-            $table->integer('barber_id')->unsigned();
-            $table->foreign('barber_id')->references('id')->on('users')->onDelete('cascade');
-            $table->integer('client_id')->unsigned();
-            $table->foreign('client_id')->references('id')->on('users')->onDelete('cascade');
-            $table->time('time');
-            $table->integer('date_id');
-            $table->boolean('deleted');
+    Schema::create('appointments', function(Blueprint $table) {
+      $table->increments('id');
+      $table->integer('barber_id')->unsigned();
+      $table->foreign('barber_id')->references('id')->on('users')->onDelete('cascade');
+      $table->integer('client_id')->unsigned();
+      $table->foreign('client_id')->references('id')->on('users')->onDelete('cascade');
+      $table->time('time');
+      $table->integer('date_id');
+      $table->boolean('deleted');
 			$table->timestamps();
-        });
+    });
 	}
-
 
 	/**
 	 * Reverse the migrations.
@@ -33,7 +32,6 @@ class CreateAppointmentsTable extends Migration {
 	 */
 	public function down()
 	{
-	    Schema::drop('appointments');
+	  Schema::drop('appointments');
 	}
-
 }

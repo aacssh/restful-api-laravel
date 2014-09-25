@@ -1,35 +1,33 @@
 <?php
 use \HairConnect\Transformers\ShiftsTransformer;
 use \HairConnect\Services\ShiftCreatorService;
-use \HairConnect\Validators\ValidationException;
+use \HairConnect\Exceptions\ValidationException;
 
 class ShiftsController extends TokensController {
+	
 	/**
-	 * [$shiftsTransformer description]
-	 * @var [type]
+	 * @var ShiftsTransformer
 	 */
-	protected $shiftsTransformer;
+	protected $transformer;
 
 	/**
-	 * [$apiController description]
-	 * @var [type]
+	 * @var APIResponse
 	 */
-	protected $apiController;
+	protected $api;
 
 	/**
-	 * [$shiftCreator description]
-	 * @var [type]
+	 * @var ShiftCreatorService
 	 */
-	protected $shiftCreator;
+	protected $service;
 
 	/**
 	 * [__construct description]
 	 * @param [type] $shiftsTransformer [description]
 	 */
-	function __construct(ShiftsTransformer $shiftsTransformer, APIController $apiController, ShiftCreatorService $shiftCreator){
-		$this->shiftsTransformer 	=	$shiftsTransformer;
-		$this->apiController 		=	$apiController;
-		$this->shiftCreator 		=	$shiftCreator;
+	function __construct(ShiftsTransformer $transformer, APIResponse $api, ShiftCreatorService $service){
+		$this->transformer = $transformer;
+		$this->api = $api;
+		$this->service = $service;
 	}
 
 	/**
@@ -40,14 +38,14 @@ class ShiftsController extends TokensController {
 	public function index($username)
 	{
 		if(($barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$shift 	   = 	Shift::where('user_id', '=', $barber->id)->get();
+			$shift = Shift::where('user_id', '=', $barber->id)->get();
 
 			if($shift->count()){
-				return $this->apiController->respondSuccessWithDetails('Shifts successfully retrieve', $this->shiftsTransformer->transformCollection($shift->all()));
+				return $this->api->respondSuccessWithDetails('Shifts successfully retrieve', $this->transformer->transformCollection($shift->all()));
 			}
-			return $this->apiController->respondNoContent('You have not created any shift.');
+			return $this->api->respondNoContent('You have not created any shift.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -59,14 +57,13 @@ class ShiftsController extends TokensController {
 	{
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
-				$this->shiftCreator->make($username, Input::all());
+				$this->service->make($username, Input::all());
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getErrors());	
+				return $this->api->respondInvalidParameters($e->getErrors());	
 			}
-
-			return $this->apiController->respondCreated('Shift has been successfully created.');
+			return $this->api->respondCreated('Shift has been successfully created.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -81,10 +78,10 @@ class ShiftsController extends TokensController {
 			$shift = Shift::where('id','=',$shiftId)->where('user_id', '=', $barber->id)->get();
 
 			if($shift->count()){
-				return $this->apiController->respondSuccessWithDetails('Shift successfully retrieved.'.$this->shiftsTransformer->transform($shift->first()));
+				return $this->api->respondSuccessWithDetails('Shift successfully retrieved.'.$this->transformer->transform($shift->first()));
 			}
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -97,13 +94,12 @@ class ShiftsController extends TokensController {
 	{
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
-				$shift = $this->shiftCreator->update($username, $shiftId, Input::all());
+				$shift = $this->service->update($username, $shiftId, Input::all());
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getErrors());	
+				return $this->api->respondInvalidParameters($e->getErrors());	
 			}
-
-			return $this->apiController->respondSuccessWithDetails('Shift has been successfully updated.', $this->shiftsTransformer->transform($shift));
+			return $this->api->respondSuccessWithDetails('Shift has been successfully updated.', $this->transformer->transform($shift));
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }

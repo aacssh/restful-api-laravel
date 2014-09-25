@@ -3,6 +3,7 @@ use Illuminate\Auth\UserTrait;
 use Illuminate\Auth\UserInterface;
 use Illuminate\Auth\Reminders\RemindableTrait;
 use Illuminate\Auth\Reminders\RemindableInterface;
+use HairConnect\Exceptions\NotFoundException;
 
 class User extends Eloquent implements UserInterface, RemindableInterface {
 
@@ -45,7 +46,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         if ( ! is_null($userInformation = static::whereUsername($username)->first($columns))) {
             return $userInformation;
         }
-        return false;
+        throw new NotFoundException;
     }
 
     /**
@@ -58,12 +59,12 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      *
      * @return User
      */
-    public static function findByEmailOrFail($email, $columns = array('*'))
+    public function findByEmailOrFail($email, $columns = array('*'))
     {
         if ( ! is_null($userInformation = static::whereEmail($email)->first($columns))) {
             return $userInformation;
         }
-        return false;
+        throw new NotFoundException;
     }
 
     /**
@@ -81,7 +82,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         if (!is_null($userInformation = static::where('access_token', '=', $token)->first($columns))) {
             return $userInformation;
         }
-        return false;
+        throw new NotFoundException;
     }
 
     /**
@@ -99,7 +100,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         if (!is_null($userInformation = static::whereUsername($username)->where('access_token', '=', $token)->first($columns))) {
             return $userInformation;
         }
-        return false;
+        throw new NotFoundException;
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 namespace HairConnect\Services;
 use HairConnect\Validators\Validator;
-use HairConnect\Validators\ValidationException;
+use HairConnect\Exceptions\ValidationException;
 
 /**
  * Class ShiftCreatorService
@@ -14,17 +14,6 @@ class ShiftCreatorService{
 	 * @var object
 	 */
 	protected $validator;
-
-	/**
-	 * Validation rules for shift
-	 * @var array
-	 */
-	protected $rules =	[
-		'start_time'    =>  'required',
-        'end_time' 		=>  'required',
-        'time_gap' 		=>  'required',
-        'date' 			=>  'required'
-	];
 
 	/**
 	 * Stores shift information
@@ -52,18 +41,18 @@ class ShiftCreatorService{
     	$date =	\Date::where('date', '=', $attributes['date'])->get();
 
     	if($shiftId == null){
-			$shift 	=	new \Shift;    		
+			$shift = new \Shift;    		
     	}else{
-    		$shift 	=	\Shift::find($shiftId);	
+    		$shift = \Shift::find($shiftId);	
     	}
 
-		$shift->user_id	=	$barber->id;
-		$shift->start_time 	=	$attributes['start_time'].':00:00';
-		$shift->end_time	=	$attributes['end_time'].':00:00';
-		$shift->time_gap	=	(int)$attributes['time_gap'];
-		$shift->date_id 	=	$date->first()->id;
+		$shift->user_id	= $barber->id;
+		$shift->start_time = $attributes['start_time'].':00:00';
+		$shift->end_time = $attributes['end_time'].':00:00';
+		$shift->time_gap = (int)$attributes['time_gap'];
+		$shift->date_id = $date->first()->id;
 		$shift->save();
-		$this->shiftDetails = 	$shift;
+		$this->shiftDetails = $shift;
 		return true;
 	}
 

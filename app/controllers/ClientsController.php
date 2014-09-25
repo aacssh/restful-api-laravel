@@ -1,36 +1,33 @@
 <?php
 use \HairConnect\Transformers\ClientsTransformer;
 use \HairConnect\Services\ProfileService;
-use \HairConnect\Validators\ValidationException;
+use \HairConnect\Exceptions\ValidationException;
 
 class ClientsController extends TokensController {
 
 	/**
-	 * [$clientsTransformer description]
-	 * @var [type]
+	 * @var ClientsTransformer
 	 */
-	protected $clientsTransformer;
+	protected $transformer;
 
 	/**
-	 * [$apiController description]
-	 * @var [type]
+	 * @var APIResponse
 	 */
-	protected $apiController;
+	protected $api;
 
 	/**
-	 * [$profileService description]
-	 * @var [type]
+	 * @var ProfileService
 	 */
-	protected $profileService;	
+	protected $service;	
 
 	/**
 	 * [__construct description]
-	 * @param ClientsTransformer $clientsTransformer [description]
+	 * @param ClientsTransformer $transformer [description]
 	 */
-	function __construct(ClientsTransformer $clientsTransformer, APIController $apiController, ProfileService $profileService){
-		$this->clientsTransformer 	= 	$clientsTransformer;
-		$this->apiController 		=	$apiController;
-		$this->profileService 		=	$profileService;
+	function __construct(ClientsTransformer $transformer, APIResponse $api, ProfileService $service){
+		$this->transformer = $transformer;
+		$this->api = $api;
+		$this->service = $service;
 	}
 
 	/**
@@ -40,24 +37,24 @@ class ClientsController extends TokensController {
 	 */
 	public function index()
 	{
-		$limit		=	Input::get('limit') ?: 5;
-        $clients 	= 	User::ofType('client')->paginate($limit);
-        $total 		=	$clients->getTotal();
+		$limit = Input::get('limit') ?: 5;
+    $clients = User::ofType('client')->paginate($limit);
+    $total = $clients->getTotal();
 
-        return $this->apiController->respond([
-        	'success' => [
-        		'message' => 'Successfulll retriveved',
-        		'status_code' => 200,
-	            'data' 	=>	$this->clientsTransformer->transformCollection($clients->all()),
-	            'paginator'	=>	[
-	            	'total_count'	=>	$total,	
-	            	'total_pages'	=>	ceil($total/$clients->getPerPage()),
-	            	'current_page'	=>	$clients->getCurrentPage(),
-	            	'limit'			=>	(int)$limit,
-	            	'prev'			=>	$clients->getLastPage()
-	            ]
-	        ]
-        ]);
+    return $this->api->respond([
+    	'success' => [
+    		'message' => 'Successfulll retriveved',
+    		'status_code' => 200,
+        'data' 	=>	$this->transformer->transformCollection($clients->all()),
+        'paginator'	=>	[
+        	'total_count'	=>	$total,	
+        	'total_pages'	=>	ceil($total/$clients->getPerPage()),
+        	'current_page'	=>	$clients->getCurrentPage(),
+        	'limit'  =>	(int)$limit,
+        	'prev'  =>	$clients->getLastPage()
+        ]
+      ]
+    ]);
 	}
 
 	/**
@@ -69,9 +66,9 @@ class ClientsController extends TokensController {
 	public function show($username)
 	{
 		if(($client = $this->checkTokenAndUsernameExists(Input::get('token'), $username) != false)){
-			return $this->apiController->respondSuccessWithDetails("{$username} details successfully retrieve", $this->clientsTransformer->transform($client));
+			return $this->api->respondSuccessWithDetails("{$username} details successfully retrieve", $this->transformer->transform($client));
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -84,13 +81,13 @@ class ClientsController extends TokensController {
 	{
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			try{
-				$client = $this->profileService->update($username, Input::all());
+				$client = $this->service->update($username, Input::all());
 			}catch(ValidationException $e){
-				return $this->apiController->respondInvalidParameters($e->getErrors());
+				return $this->api->respondInvalidParameters($e->getErrors());
 			}
-			return $this->apiController->respondSuccessWithDetails('Profile successfully updated.', $this->clientsTransformer->transform($client));
+			return $this->api->respondSuccessWithDetails('Profile successfully updated.', $this->transformer->transform($client));
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -102,12 +99,11 @@ class ClientsController extends TokensController {
 	public function destroy($username)
 	{
 		if(($client = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$client->online			=	0;
-			$client->deactivated	=	0;
+			$client->online	= 0;
+			$client->deactivated = 0;
 			$client->save();
-
-			return $this->apiController->respondSuccess('Account has been successfully deactivated.');
+			return $this->api->respondSuccess('Account has been successfully deactivated.');
 		}
-		return $this->apiController->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }
