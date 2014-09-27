@@ -10,7 +10,10 @@ class AppointmentValidation extends Validator{
 	];
 
 	public function validateAppointmentAttributes(array $attributes){
-		$this->isValid($attributes, $this->rules);
-		return true;
+		try{
+			$this->isValid($attributes, $this->rules);
+		}catch(ValidationException $e){
+			throw new ValidationException($this->getErrors());
+		}
 	}
 }

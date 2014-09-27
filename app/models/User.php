@@ -24,6 +24,8 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 	 */
 	protected $table = 'users';
 
+    protected $exceptionMessage = 'Given credentials\' do not match with any user.';
+
 	/**
 	 * The attributes excluded from the model's JSON form.
 	 *
@@ -41,12 +43,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      *
      * @return User
      */
-    public static function findByUsernameOrFail($username, $columns = array('*'))
-    {
+    public function findByUsernameOrFail($username, $columns = array('*')){
         if ( ! is_null($userInformation = static::whereUsername($username)->first($columns))) {
             return $userInformation;
         }
-        throw new NotFoundException;
+        throw new NotFoundException($this->exceptionMessage);
     }
 
     /**
@@ -59,12 +60,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      *
      * @return User
      */
-    public function findByEmailOrFail($email, $columns = array('*'))
-    {
+    public function findByEmailOrFail($email, $columns = array('*')){
         if ( ! is_null($userInformation = static::whereEmail($email)->first($columns))) {
             return $userInformation;
         }
-        throw new NotFoundException;
+        throw new NotFoundException($this->exceptionMessage);
     }
 
     /**
@@ -77,12 +77,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      *
      * @return User
      */
-    public static function findByTokenOrFail($token, $columns = array('*'))
-    {
+    public function findByTokenOrFail($token, $columns = array('*')){
         if (!is_null($userInformation = static::where('access_token', '=', $token)->first($columns))) {
             return $userInformation;
         }
-        throw new NotFoundException;
+        throw new NotFoundException($this->exceptionMessage);
     }
 
     /**
@@ -95,12 +94,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      *
      * @return User
      */
-    public static function findByTokenAndUsernameOrFail($token, $username, $columns = array('*'))
-    {
+    public function findByTokenAndUsernameOrFail($token, $username, $columns = array('*')){
         if (!is_null($userInformation = static::whereUsername($username)->where('access_token', '=', $token)->first($columns))) {
             return $userInformation;
         }
-        throw new NotFoundException;
+        throw new NotFoundException($this->exceptionMessage);
     }
 
     /**
@@ -110,8 +108,14 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      * @param  [type] $type  [description]
      * @return [type]        [description]
      */
-	public function scopeOfType($query, $type)
-    {
+	public function scopeOfType($query, $type){
         return $query->whereType($type);
+    }
+
+    public function findByRecoveryCode($code){
+        if(!is_null($userInformation = static::where('code', '=', $code)->where('password_temp', '!=', '')->first())){
+            return $userInformation;
+        }
+        throw new NotFoundException($this->exceptionMessage);
     }
 }

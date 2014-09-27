@@ -14,4 +14,11 @@ class HairStyleImage extends \Eloquent {
 	 * @var string
 	 */
     protected $tables = 'hair_style_images';
+
+    public function findAllByBarberId($id){
+        if(!is_null($images = static::where('user_id', '=', $id)->get())){
+            return $images;
+        }
+        throw new NotFoundException('No hair style image found.');
+    }
 }

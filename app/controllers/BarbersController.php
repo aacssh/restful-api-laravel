@@ -23,6 +23,8 @@ class BarbersController extends TokensController {
 	 */
 	protected $service;
 
+	protected $imageTransformer;
+
 	/**
 	 * Prepare the object of the controller for use
 	 * @param BarbersTransformer $transformer
@@ -30,10 +32,11 @@ class BarbersController extends TokensController {
 	 * @param APIController      $apiController     
 	 * @param ProfileService     $profileService    
 	 */
-	function __construct(BarbersTransformer $transformer, APIResponse $api, ProfileService $service){
+	function __construct(BarbersTransformer $transformer, APIResponse $api, ProfileService $service, ImagesTransformer $imagesTransformer){
 		$this->transformer = $transformer;
 		$this->api = $api;
 		$this->service = $service;
+		$this->imageTransformer = $imagesTransformer;
 	}
 	
 	/**
@@ -41,8 +44,7 @@ class BarbersController extends TokensController {
 	 *
 	 * @return Response
 	 */
-	public function index()
-	{
+	public function index(){
 		$limit = Input::get('limit') ?: 5;
 		$barbers = User::ofType('barber')->paginate($limit);
 		$total = $barbers->getTotal();
@@ -69,17 +71,13 @@ class BarbersController extends TokensController {
 	 * @param  int  $username
 	 * @return Response
 	 */
-	public function show($username, ImagesTransformer $imagesTransformer)
-	{
-		if( ($barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$hsi = HairStyleImage::where('user_id', '=', $barber->id)->get();
-
-			$barberDetailsWithHairStyleImages = array_merge($this->transformer->transform($barber), [
-				'hair_style_images'	=>	$imagesTransformer->transformCollection($hsi->all())
-			]);
-			return $this->api->respondSuccessWithDetails("{$username} data successfully retriveve", $barberDetailsWithHairStyleImages);
+	public function show($username){
+		try{
+			$this->service->show(Input::all(), $username);
+			return $this->api->respondSuccessWithDetails("{$username} data successfully retriveve", $this->transformer->transformWithImages($this->service->getProfileDetails()));
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());	
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -88,17 +86,13 @@ class BarbersController extends TokensController {
 	 * @param  int  $username
 	 * @return Response
 	 */
-	public function update($username)
-	{
-		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
-			try{
-				$barberDetails = $this->service->update($username, Input::all());
-			}catch(ValidationException $e){
-				return $this->api->respondInvalidParameters($e->getErrors());
-			}
-			return $this->api->respondSuccessWithDetails('Profile info have been updated.', $this->transformer->transform($barberDetails));
+	public function update($username){
+		try{
+			$this->service->update($username, Input::all());
+			return $this->api->respondSuccessWithDetails('Profile successfully updated.', $this->transformer->transform($this->service->getProfileDetails()));
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());	
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -107,19 +101,16 @@ class BarbersController extends TokensController {
 	 * @param  string  $username
 	 * @return Response
 	 */
-	public function destroy($username)
-	{
-		if(( $barber = $this->checkTokenAndUsernameExists(Input::get('token'), $username) != false)){
-			$barber->online	= 0;
-			$barber->deactivated = 0;
-			$barber->save();
+	public function destroy($username){
+		try{
+			$this->service->destroy(Input::all(), $username);
 			return $this->api->respondSuccess('Account has been successfully deactivated.');
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());	
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
-	public function search()
-	{
+	public function search(){
 		$limit = Input::get('limit') ?: 5;
 		$name = explode(' ', Input::get('name'));
 		$city = Input::get('city');

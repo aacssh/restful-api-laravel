@@ -14,4 +14,11 @@ class Shift extends \Eloquent {
 	 * @var string
 	 */
     protected $table = 'shifts';
+
+    public function findAllByBarberId($id){
+        if (!is_null($barberInfo = static::where('user_id', '=', $id)->get())){
+            return $barberInfo;
+        }
+        throw new NotFoundException($this->exceptionMessage);
+    }
 }

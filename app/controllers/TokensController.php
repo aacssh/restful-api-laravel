@@ -1,10 +1,17 @@
 <?php
+use HairConnect\Exceptions\NotFoundException;
+
 abstract class TokensController extends \BaseController{	
 	/**
 	 * This variable stores user's access token
 	 * @var string
 	 */
 	protected $token;
+	protected $user;
+
+	function __construct(User $user){
+		$this->user = $user;
+	}
 
 	/**
 	 * Stores a message for any invald token
@@ -21,24 +28,10 @@ abstract class TokensController extends \BaseController{
 	 */
 	public function checkTokenAndUsernameExists($token, $username)
 	{
-		if(!$this->isNull($token)){
-			if(($user = User::findByTokenAndUsernameOrFail($token, $username)) != false){
-				return $user;
-			}
+		try{
+			return $this->user->findByTokenAndUsernameOrFail($token, $username);
+		}catch(NotFoundException $e){
+			throw new NotFoundException($e);
 		}
-		return false;
-	}
-
-	/**
-	 * This function checks if token is null or not
-	 * @param  string  $token
-	 * @return boolean       
-	 */
-	protected function isNull($token)
-	{
-		if(is_null($token)){
-			return true;
-		}
-		return false;
 	}
 }

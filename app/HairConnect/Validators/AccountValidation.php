@@ -15,7 +15,8 @@ class AccountValidation extends Validator{
 	protected $passwordUpdateRules = [
 		'old_password' => 'required',
 		'new_password' => 'required|min:6',
-		'confirm_password' => 'required|same:new_password'
+		'confirm_password' => 'required|same:new_password',
+		'username' => 'required'
 	];
 
 	protected $registerRules = [
@@ -27,39 +28,48 @@ class AccountValidation extends Validator{
     'type' => 'required'
 	];
 
+	protected $tokenUsernameRules = [
+		'username' => 'required',
+		'token' => 'required'
+	];
+
 	public function validateLoginAttributes(array $attributes){
 		try{
 			$this->isValid($attributes, $this->loginRules);
-			return true;
 		}catch(ValidationException $e){
-			throw new ValidationException($e->getMessage());
+			throw new ValidationException($this->getErrors());
 		}
 	}
 
 	public function validatePasswordRecoveryAttributes(array $attributes){
 		try{
 			$this->isValid($attributes, $this->passwordRecoveryRules);
-			return true;
 		}catch(ValidationException $e){
-			throw new ValidationException($e->getMessage());
+			throw new ValidationException($this->getErrors());
 		}
 	}
 
 	public function validatePasswordUpdateAttributes(array $attributes){
 		try{
 			$this->isValid($attributes, $this->passwordUpdateRules);
-			return true;
 		}catch(ValidationException $e){
-			throw new ValidationException($e->getMessage());
+			throw new ValidationException($this->getErrors());
 		}
 	}
 
 	public function validateRegisterAttributes(array $attributes){
 		try{
 			$this->isValid($attributes, $this->registerRules);
-			return true;
 		}catch(ValidationException $e){
-			throw new ValidationException($e->getMessage());
+			throw new ValidationException($this->getErrors());
 		}
+	}
+
+	public function validateTokenAndUsername(array $attributes){
+		try{
+			$this->isValid($attributes, $this->tokenUsernameRules);
+		}catch(ValidationException $e){
+			throw new ValidationException($this->getErrors());
+		}		
 	}
 }

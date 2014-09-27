@@ -2,6 +2,7 @@
 use \HairConnect\Services\AccountService;
 use \HairConnect\Transformers\UsersTransformer;
 use \HairConnect\Exceptions\ValidationException;
+use \HairConnect\Exceptions\NotSavedException;
 
 class AccountsController extends TokensController {
 
@@ -43,12 +44,12 @@ class AccountsController extends TokensController {
 	{
 		try{
     	$this->service->make(Input::all());
+    	return $this->api->respondSuccessWithDetails(
+	    	'User has been successfully registered.', $this->transformer->transform($this->service->getUserDetails())
+	    );
     }catch(ValidationException $e){
     	return $this->api->respondInvalidParameters($e->getMessage());
     }
-    return $this->api->respondSuccessWithDetails(
-    	'User has been successfully registered.', $this->transformer->transform($this->service->getUserDetails())
-    );
 	}
 
 	/**
@@ -59,12 +60,12 @@ class AccountsController extends TokensController {
 	{
 		try{
     	$this->service->login(Input::all());
+    	return $this->api->respondSuccessWithDetails(
+	    	'Successfully logged in.', $this->transformer->transform($this->service->getUserDetails())
+	    );
     }catch(ValidationException $e){
     	return $this->api->respondInvalidParameters($e->getMessage());
     }
-    return $this->api->respondSuccessWithDetails(
-    	'Successfully logged in.', $this->transformer->transform($this->service->getUserDetails())
-    );
 	}
 
 	/**
@@ -74,46 +75,42 @@ class AccountsController extends TokensController {
 	 */
 	public function destroy()
 	{
-		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
-			$token->access_token = NULL;
-			if($token->save()){
-				return $this->api->respondSuccess('Successfully logged out.');
-			}
+		try{
+			$this->service->destroy(Input::all());
+			return $this->api->respondSuccess('Successfully logged out.');
+		}catch(ValidationException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
+		}catch(NotSavedException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
 	 * This function updates the password of a user
 	 * @return Response
 	 */
-	public function update()
-	{
-		if(($token = $this->checkTokenAndUsernameExists(Input::get('token'), Input::get('username'))) != false){
-			try{
-				$this->service->update(Input::all());
-			}catch(ValidationException $e){
-				return $this->api->respondInvalidParameters($e->getMessage());
-			}
-			return $this->api->respondSuccess('Password successfully changed.');
+	public function update(){
+		try{
+			$this->service->update(Input::all());
+		}catch(ValidationException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		return $this->api->respondSuccess('Password successfully changed.');
 	}
 
 	/**
 	 * This function generate a new password and sends it to user' email along with an activation link
 	 * @return Response
 	 */
-	public function forgotPassword()
-	{
+	public function forgotPassword(){
 		try{
-			if(!$this->service->forgotPassword(Input::all())){
-				return $this->api->respondInvalidParameters(['Email does not exist.']);
-			}
+			$this->service->forgotPassword(Input::all());
+			return $this->api->respondSuccess('Check your email for new password.');
 		}catch(ValidationException $e){
 			return $this->api->respondInvalidParameters($e->getMessage());
+		}catch(NotSavedException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondSuccess('Check your email for new password.');
 	}
 
 	/**
@@ -126,9 +123,9 @@ class AccountsController extends TokensController {
 	{
 		try{
 			$this->service->recover(Input::all(), $code);
+			return $this->api->respondSuccess('Your account has been recovered. Sign in with your new password');
 		}catch(ValidationException $e){
 			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondSuccess('Your account has been recovered. Sign in with your new password');
 	}
 }

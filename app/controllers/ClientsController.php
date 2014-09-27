@@ -35,8 +35,7 @@ class ClientsController extends TokensController {
 	 *
 	 * @return Response
 	 */
-	public function index()
-	{
+	public function index(){
 		$limit = Input::get('limit') ?: 5;
     $clients = User::ofType('client')->paginate($limit);
     $total = $clients->getTotal();
@@ -63,12 +62,13 @@ class ClientsController extends TokensController {
 	 * @param  int  $id
 	 * @return Response
 	 */
-	public function show($username)
-	{
-		if(($client = $this->checkTokenAndUsernameExists(Input::get('token'), $username) != false)){
-			return $this->api->respondSuccessWithDetails("{$username} details successfully retrieve", $this->transformer->transform($client));
+	public function show($username){
+		try{
+			$this->service->show(Input::all(), $username);
+			return $this->api->respondSuccessWithDetails("{$username} details successfully retrieve", $this->transformer->transform($this->service->getProfileDetails()));
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -77,17 +77,13 @@ class ClientsController extends TokensController {
 	 * @param  int  $username
 	 * @return Response
 	 */
-	public function update($username)
-	{
-		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
-			try{
-				$client = $this->service->update($username, Input::all());
-			}catch(ValidationException $e){
-				return $this->api->respondInvalidParameters($e->getErrors());
-			}
-			return $this->api->respondSuccessWithDetails('Profile successfully updated.', $this->transformer->transform($client));
+	public function update($username){
+		try{
+			$client = $this->service->update(Input::all(), $username);
+			return $this->api->respondSuccessWithDetails('Profile successfully updated.', $this->transformer->transform($this->service->getProfileDetails()));
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -96,14 +92,12 @@ class ClientsController extends TokensController {
 	 * @param  string 	$username
 	 * @return Response
 	 */
-	public function destroy($username)
-	{
-		if(($client = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$client->online	= 0;
-			$client->deactivated = 0;
-			$client->save();
+	public function destroy($username){
+		try{
+			$this->service->destroy(Input::all(), $username);
 			return $this->api->respondSuccess('Account has been successfully deactivated.');
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());	
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 }

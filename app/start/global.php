@@ -56,6 +56,16 @@ App::missing(function($exception)
 	], 404);
 });
 
+App::error(function(ErrorException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => $exception->getMessage().' in file \''.$exception->getFile().'\' on line number '.$exception->getLine(),
+			'status_code' => 400
+		]
+	], 400);
+});
+
 App::error(function(Symfony\Component\HttpKernel\Exception\NotFoundHttpException $exception, $code)
 {
 	return Response::json([
@@ -74,6 +84,36 @@ App::error(function(Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpE
 			'status_code' => 405
 		]
 	], 405);
+});
+
+App::error(function(Symfony\Component\Debug\Exception\FatalErrorException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => $exception->getMessage().' in file '.$exception->getFile().' on line number '.$exception->getLine(),
+			'status_code' => 400
+		]
+	], 400);
+});
+
+App::error(function(ReflectionException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => $exception->getMessage(),
+			'status_code' => 404
+		]
+	], 404);
+});
+
+App::error(function(BadMethodCallException $exception, $code)
+{
+	return Response::json([
+		'error' => [
+			'message' => $exception->getMessage(),
+			'status_code' => 400
+		]
+	], 400);
 });
 
 App::error(function(Exception $exception, $code)

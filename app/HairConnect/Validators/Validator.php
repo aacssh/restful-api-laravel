@@ -9,6 +9,8 @@ use Validator as V;
  */
 class Validator{
 
+	protected $errors;
+
 	/**
 	 * Checks if data are valid or not.
 	 * @param  array   $attributes All input data
@@ -20,10 +22,11 @@ class Validator{
 		$v = V::make($attributes, $rules);
 
 		if($v->fails()){
-			$this->errors = $v->messages();
-			throw new ValidationException('Email or password does not match.');
+			foreach ($v->messages()->all() as $message){
+				$this->errors .= ' '.$message;
+			}
+			throw new ValidationException($this->getErrors());
 		}
-		return true;
 	}
 
 	/**
@@ -32,6 +35,6 @@ class Validator{
 	 */
 	public function getErrors()
 	{
-		return $this->errors;
+		return trim($this->errors);
 	}
 }
