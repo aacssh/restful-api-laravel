@@ -21,4 +21,11 @@ class Date extends \Eloquent {
      * @var string
      */
     public $table = 'dates';
+
+    public function findByDate($date){
+        if(!is_null($dateId = static::where('date', '=', $date)->get()->first())){
+            return $dateId;
+        }
+        throw new NotFoundException("Invalid date given.");
+    }
 }

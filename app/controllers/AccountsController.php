@@ -40,8 +40,7 @@ class AccountsController extends TokensController {
 	 *
 	 * @return Response
 	 */
-	public function register()
-	{
+	public function register(){
 		try{
     	$this->service->make(Input::all());
     	return $this->api->respondSuccessWithDetails(
@@ -56,8 +55,7 @@ class AccountsController extends TokensController {
 	 * This function logs in user into the system
 	 * @return Response
 	 */
-	public function login()
-	{
+	public function login(){
 		try{
     	$this->service->login(Input::all());
     	return $this->api->respondSuccessWithDetails(
@@ -73,8 +71,7 @@ class AccountsController extends TokensController {
 	 *
 	 * @return Response
 	 */
-	public function destroy()
-	{
+	public function destroy(){
 		try{
 			$this->service->destroy(Input::all());
 			return $this->api->respondSuccess('Successfully logged out.');
@@ -119,8 +116,7 @@ class AccountsController extends TokensController {
 	 * @param  string $code
 	 * @return Response
 	 */
-	public function recover($code)
-	{
+	public function recover($code){
 		try{
 			$this->service->recover(Input::all(), $code);
 			return $this->api->respondSuccess('Your account has been recovered. Sign in with your new password');

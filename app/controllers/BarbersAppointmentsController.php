@@ -1,4 +1,5 @@
 <?php
+use HairConnect\Services\AppointmentService;
 
 class BarbersAppointmentsController extends AppointmentsController {
 	/**

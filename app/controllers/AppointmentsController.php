@@ -1,5 +1,6 @@
 <?php
 use \HairConnect\Transformers\AppointmentsTransformer;
+use HairConnect\Services\AppointmentService;
 
 abstract class AppointmentsController extends TokensController {
 
@@ -8,6 +9,7 @@ abstract class AppointmentsController extends TokensController {
 	 * @var ApointmentsTransformer
 	 */
 	protected $transformer;
+	protected $service;
 
 	/**
 	 * Stores object of APIController
@@ -20,18 +22,11 @@ abstract class AppointmentsController extends TokensController {
 	 * @param AppointmentsTransformer $transformer
 	 * @param APIController           $api 
 	 */
-	function __construct(AppointmentsTransformer $transformer, APIResponse $api){
+	function __construct(AppointmentsTransformer $transformer, APIResponse $api, AppointmentService $service){
 		$this->transformer = $transformer;
 		$this->api = $api;
-	}
-
-	/**
-	 * Get the secondary type of user
-	 * @param  int $id
-	 * @return object
-	 */
-	public function getSecondaryUserType($id){
-		return User::find($id);
+		$this->service = $service;
+		$this->service->setUsers($this->mainUserType, $this->secUserType);
 	}
 
 	/**
@@ -40,8 +35,7 @@ abstract class AppointmentsController extends TokensController {
 	 * @param  string $username	 
 	 * @return Response
 	 */
-	public function index($username)
-	{
+	public function index($username){
 		if(($user = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
 			$limit = Input::get('limit') ?: 5;
 			$appointments =	Appointment::where("{$this->mainUserType}_id", '=', $user->id)->paginate($limit);
@@ -90,8 +84,15 @@ abstract class AppointmentsController extends TokensController {
 	 * @param  integer $appointmentId
 	 * @return Response
 	 */
-	public function show($username, $appointmentId)
-	{
+	public function show($username, $appointmentId){
+		try{
+			$this->service->show(Input::all(), $username, $appointmentId);
+			// TODO: create a specific appointment transformer for barbers and clinets
+			return $this->service->getAppointmentDetails();
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
+		}
+		/*
 		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
 			$appointment = Appointment::find($appointmentId);
 			if($appointment->count()){
@@ -105,17 +106,18 @@ abstract class AppointmentsController extends TokensController {
 				return $this->api->respond([
 					'appointment' => [
 						//"saloon_name"				=>	$secUserType->shop_name,
-						"{$this->secUserType}_name"		=>	$secUserType->fname.' '.$secUserType->lname,
+						"{$this->secUserType}_name" =>	$secUserType->fname.' '.$secUserType->lname,
 						"{$this->secUserType}_username"	=>	$secUserType->username,
-						'canceled'					=>	(bool)$appointment->deleted,
-						'time' 						=>	$appointment->time,
-						'date'						=>	$date->date
+						'canceled' =>	(bool)$appointment->deleted,
+						'time' =>	$appointment->time,
+						'date' =>	$date->date
 					]
 				]);
 			}
 			return $this->api->respondNotFound('Appointment does not exist.');
 		}
 		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+		*/
 	}
 
 	/**
@@ -124,18 +126,20 @@ abstract class AppointmentsController extends TokensController {
 	 * @param  string  $username
 	 * @return Response
 	 */
-	public function destroy($username, $appointmentId)
-	{
-		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
-			$appointment = Appointment::find($appointmentId);
-
-			if($appointment->count()){
-				$appointment->deleted = 1;
-				$appointment->save();
-				return $this->api->respondSuccess('Appointment has been successfully cancelled.',);
-			}
-			return $this->api->respondNotFound('Appointment not found or already cancelled.');
+	public function destroy($username, $appointmentId){
+		try{
+			$this->service->destroy(Input::all(), $username, $appointmentId);	
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());	
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
+	}
+
+	/**
+	 * Get the secondary type of user
+	 * @param  int $id
+	 * @return object
+	 */
+	public function getSecondaryUserType($id){
+		return User::find($id);
 	}
 }
