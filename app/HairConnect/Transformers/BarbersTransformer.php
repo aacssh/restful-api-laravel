@@ -20,17 +20,17 @@ class BarbersTransformer extends Transformers{
    */
   public function transform($barber){
     return [
-      'saloon_name'  =>	$barber->shop_name,
-      'username'  =>  $barber->username,
-      'name'  =>  $barber->fname.' '.$barber->lname,
-      'profile_image'  =>  $barber->image,
-      'contact_no'  =>  $barber->contact_no + 0,
-      'email'  =>  $barber->email,
-      'address'  =>  $barber->address,
-      'zip'  =>  $barber->zip + 0,
-      'online'  =>  (boolean)$barber->online,
-      'deactivated'  =>  (boolean)$barber->deactivated,
-      'member_since'  =>  $barber->created_at
+      'saloon_name'  =>	$barber['shop_name'],
+      'username'  =>  $barber['username'],
+      'name'  =>  $barber['fname'].' '.$barber['lname'],
+      'profile_image'  =>  $barber['image'],
+      'contact_no'  =>  $barber['contact_no'] + 0,
+      'email'  =>  $barber['email'],
+      'address'  =>  $barber['address'],
+      'zip'  =>  $barber['zip'] + 0,
+      'online'  =>  (boolean)$barber['online'],
+      'deactivated'  =>  (boolean)$barber['deactivated'],
+      'member_since'  =>  $barber['created_at']
     ];
   }
 

@@ -76,7 +76,7 @@ class BarbersController extends TokensController {
 			$this->service->show(Input::all(), $username);
 			return $this->api->respondSuccessWithDetails("{$username} data successfully retriveve", $this->transformer->transformWithImages($this->service->getProfileDetails()));
 		}catch(RuntimeException $e){
-			return $this->api->respondInvalidParameters($e->getMessage());	
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
 	}
 
@@ -111,36 +111,16 @@ class BarbersController extends TokensController {
 	}
 
 	public function search(){
-		$limit = Input::get('limit') ?: 5;
-		$name = explode(' ', Input::get('name'));
-		$city = Input::get('city');
-		$zip = Input::get('zip');
-
-		if(count($name) == 1){
-			$name[1] = $name[0];
+		try{
+			$this->service->search(Input::all(), 'barber');
+			return $this->api->respondSuccessWithDetails(
+				'List of barbers successfully retrieved.', [
+					'barbers' => $this->transformer->transformCollection($this->service->getProfileDetails()->toArray()['data']),
+					'paginator' => $this->service->getPaginator()
+				]);
+			return $this->service->getProfileDetails();
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-
-		$barbers = User::ofType('barber')->where(
-					function($query) use ($name, $zip, $city)
-					{
-						$query->where('fname', 'LIKE', '%'.$name[0].'%')->orWhere('lname', 'LIKE', '%'.$name[1].'%')
-							  ->orWhere('zip', '=', $zip)->orWhere('address', 'LIKE', '%'.$city.'%');
-					})->paginate($limit);
-		$total = $barbers->getTotal();
-
-    return $this->api->respond([
-    	'success' => [
-    		'message' => 'Successfulll retriveved',
-    		'status_code' => 200,
-        'data'  => 	$this->transformer->transformCollection($barbers->all()),
-        'paginator'	=>	[
-        	'total_count'	=>	$total,	
-        	'total_pages'	=>	ceil($total/$barbers->getPerPage()),
-        	'current_page'	=>	$barbers->getCurrentPage(),
-        	'limit'  =>	(int)$limit,
-        	'prev'  =>	$barbers->getLastPage()
-        ]
-    	]
-    ]);
 	}
 }

@@ -24,6 +24,7 @@ class ProfileService{
 	 * @var object
 	 */
 	private $profileDetails;
+	private $paginateDetails;
 
 	/**
 	 * Construct profile service
@@ -33,6 +34,67 @@ class ProfileService{
 		$this->validator = $validator;
 		$this->user = $user;
 		$this->hairStyleImage = $hairStyleImage;
+	}
+
+	public function search(array $attributes, $userType){
+		$limit = $this->getLimit($attributes);
+		$searchAttributes = [
+			'userType' => $userType,
+			'limit' => $limit,
+			'name' => $this->getName($attributes),
+			'city' => $this->getCity($attributes),
+			'zip' => $this->getZip($attributes)
+		];
+		try{
+			$profiles = $this->user->findByUsersTypeAndSearchAttributes($searchAttributes);
+			$this->profileDetails = $profiles;
+			$this->setPaginator($profiles, $limit);
+		}catch(NotFoundException $e){
+			throw new RuntimeException($e->getMessage());
+		}		
+	}
+
+	public function getLimit($attributes){
+		if(array_key_exists('limit', $attributes)){
+			return $attributes['limit'];
+		}
+		return 5;
+	}
+
+	public function getName($attributes){
+		if(array_key_exists('name', $attributes)){
+			$name = explode(' ', $attributes['name']);
+			if(count($name) == 1){
+				$name[1] = $name[0];
+			}
+			return $name;
+		}
+	}
+
+	public function getCity($attributes){
+		if(array_key_exists('city', $attributes)){
+			return $attributes['city'];
+		}
+	}
+
+	public function getZip($attributes){
+		if(array_key_exists('zip', $attributes)){
+			return $attributes['zip'];
+		}
+	}
+
+	public function setPaginator($profile, $limit){
+		$this->paginateDetails =  [
+    	'total_count' => $profile->getTotal(),
+    	'total_pages' => ceil($profile->getTotal()/$profile->getPerPage()),
+    	'current_page' =>	$profile->getCurrentPage(),
+    	'limit' => (int)$limit,
+    	'prev' =>	$profile->getLastPage()
+		];
+	}
+
+	public function getPaginator(){
+		return $this->paginateDetails;
 	}
 
 	/**

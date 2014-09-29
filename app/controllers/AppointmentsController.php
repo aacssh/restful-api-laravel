@@ -1,5 +1,5 @@
 <?php
-use \HairConnect\Transformers\AppointmentsTransformer;
+use \HairConnect\Transformers\Transformers;
 use HairConnect\Services\AppointmentService;
 
 abstract class AppointmentsController extends TokensController {
@@ -22,7 +22,7 @@ abstract class AppointmentsController extends TokensController {
 	 * @param AppointmentsTransformer $transformer
 	 * @param APIController           $api 
 	 */
-	function __construct(AppointmentsTransformer $transformer, APIResponse $api, AppointmentService $service){
+	function __construct(Transformers $transformer, APIResponse $api, AppointmentService $service){
 		$this->transformer = $transformer;
 		$this->api = $api;
 		$this->service = $service;
@@ -36,45 +36,16 @@ abstract class AppointmentsController extends TokensController {
 	 * @return Response
 	 */
 	public function index($username){
-		if(($user = $this->checkTokenAndUsernameExists(Input::get('token'), $username)) != false){
-			$limit = Input::get('limit') ?: 5;
-			$appointments =	Appointment::where("{$this->mainUserType}_id", '=', $user->id)->paginate($limit);
-			$totalAppointments = $appointments->getTotal();
-			
-			if($appointments->count()){
-				$appointmentsOfSecUserType = [];
-				foreach ($appointments as $appointment){
-					if($this->secUserType == 'barber'){
-						$secUserType = $this->getSecondaryUserType($appointment->barber_id);
-					}else if($this->secUserType == 'client'){
-						$secUserType = $this->getSecondaryUserType($appointment->client_id);
-					}
-
-					$date =	Date::where('id', '=', $appointment->date_id)->get()->first();
-					array_push($appointmentsOfSecUserType,[
-						'appointment_id' 			=>	(int)$appointment->id,
-						"{$this->secUserType}_name" =>	$secUserType->fname.' '.$secUserType->lname,
-						"{$this->secUserType}_id"	=>	(int)$secUserType->id,
-						'time' 						=>	$appointment->time,
-						'cancelled'					=>	(bool)$appointment->deleted,
-						'date'						=>	$date->date
-					]);
-				}
-				
-				return $this->api->respond([
-					'appointments' 	=> $appointmentsOfSecUserType,
-          'paginator'		=>	[
-          	'total_count'	=>	$totalAppointments,	
-          	'total_pages'	=>	ceil($totalAppointments/$appointments->getPerPage()),
-          	'current_page'	=>	$appointments->getCurrentPage(),
-          	'limit'			=>	(int)$limit,
-          	'prev'			=>	$appointments->getLastPage()
-          ]
+		try{
+			$this->service->showAll(Input::all(), $username);
+			return $this->api->respondSuccessWithDetails(
+				'Appointment successfully retrieved.', [
+					'appoiontments' => $this->transformer->transformCollection($this->service->getAppointmentDetails()), 
+					'paginator' => $this->service->getPaginator()
 				]);
-			}
-			return $this->api->respondNoContent('You have no appointment.');
+		}catch(RuntimeException $e){
+			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
 	}
 
 	/**
@@ -87,37 +58,10 @@ abstract class AppointmentsController extends TokensController {
 	public function show($username, $appointmentId){
 		try{
 			$this->service->show(Input::all(), $username, $appointmentId);
-			// TODO: create a specific appointment transformer for barbers and clinets
-			return $this->service->getAppointmentDetails();
+			return $this->api->respondSuccessWithDetails('Appointment successfully retrieved.', $this->transformer->transform($this->service->getAppointmentDetails()));
 		}catch(RuntimeException $e){
 			return $this->api->respondInvalidParameters($e->getMessage());
 		}
-		/*
-		if($this->checkTokenAndUsernameExists(Input::get('token'), $username) != false){
-			$appointment = Appointment::find($appointmentId);
-			if($appointment->count()){
-				if($this->secUserType == 'barber'){
-					$secUserType = $this->getSecondaryUserType($appointment->barber_id);
-				}else if($this->secUserType == 'client'){
-					$secUserType = $this->getSecondaryUserType($appointment->client_id);
-				}
-				$date =	Date::where('id', '=', $appointment->date_id)->get()->first();
-
-				return $this->api->respond([
-					'appointment' => [
-						//"saloon_name"				=>	$secUserType->shop_name,
-						"{$this->secUserType}_name" =>	$secUserType->fname.' '.$secUserType->lname,
-						"{$this->secUserType}_username"	=>	$secUserType->username,
-						'canceled' =>	(bool)$appointment->deleted,
-						'time' =>	$appointment->time,
-						'date' =>	$date->date
-					]
-				]);
-			}
-			return $this->api->respondNotFound('Appointment does not exist.');
-		}
-		return $this->api->respondInvalidParameters(self::MESSAGE_FOR_INVALID_TOKEN_AND_USERNAME);
-		*/
 	}
 
 	/**

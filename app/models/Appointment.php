@@ -23,4 +23,11 @@ class Appointment extends \Eloquent {
     }
     throw new NotFoundException('Given appointment id do not match with any appointment.');
   }
+
+  public function findByUserWithPaginate($user, $id, $limit){
+    if(!is_null($appointment = static::where($user, '=', $id)->paginate($limit))){
+      return $appointment;
+    }
+    throw new NotFoundException('Given appointment id do not match with any appointment.');
+  }
 }

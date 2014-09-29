@@ -1,5 +1,6 @@
 <?php
 use HairConnect\Services\AppointmentService;
+use \HairConnect\Transformers\BarbersAppointmentsTransformer;
 
 class BarbersAppointmentsController extends AppointmentsController {
 	/**
@@ -13,4 +14,8 @@ class BarbersAppointmentsController extends AppointmentsController {
 	 * @var string
 	 */
 	protected $secUserType = 'client';
+
+	function __construct(BarbersAppointmentsTransformer $transformer, APIResponse $api, AppointmentService $service){
+		parent::__construct($transformer, $api, $service);
+	}
 }

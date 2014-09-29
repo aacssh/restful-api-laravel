@@ -24,6 +24,7 @@ class AppointmentService{
 	 * @var object
 	 */
 	private $appointmentDetails;
+	private $paginateDetails;
 	private $mainUserType;
 	private $secUserType;
 
@@ -41,6 +42,49 @@ class AppointmentService{
 	public function setUsers($mainUserType, $secUserType){
 		$this->mainUserType = $mainUserType;
 		$this->secUserType = $secUserType;
+	}
+
+	public function showAll(array $attributes, $username){
+		try{
+			$this->validator->validateToken($attributes);
+			$user = $this->user->findByTokenAndUsernameOrFail($attributes['token'], $username);
+			$limit = $this->getLimit($attributes);
+			$appointments = $this->appointment->findByUserWithPaginate("{$this->mainUserType}_id", $user->id, $limit);
+			$appointmentsOfSecUserType = [];
+
+			foreach($appointments as $appointment){
+				$secUserType = $this->getSecondaryUserType($appointment);
+				$date =	$this->date->find($appointment->date_id);
+				array_push($appointmentsOfSecUserType, $this->buildArray($secUserType, $appointment, $date));
+			}
+			$this->appointmentDetails = $appointmentsOfSecUserType;
+		  $this->setPaginator($appointments, $limit);
+		}catch(NotFoundException $e){
+			throw new RuntimeException($e->getMessage());
+		}catch(ValidationException $e){
+			throw new RuntimeException($e->getMessage());
+		}
+	}
+
+	public function getLimit($attributes){
+		if(array_key_exists('limit', $attributes)){
+			return $attributes['limit'];
+		}
+		return 5;
+	}
+
+	public function setPaginator($appointments, $limit){
+		$this->paginateDetails =  [
+    	'total_count' => $appointments->getTotal(),
+    	'total_pages' => ceil($appointments->getTotal()/$appointments->getPerPage()),
+    	'current_page' =>	$appointments->getCurrentPage(),
+    	'limit' => (int)$limit,
+    	'prev' =>	$appointments->getLastPage()
+		];
+	}
+
+	public function getPaginator(){
+		return $this->paginateDetails;
 	}
 
 	public function show(array $attributes, $username, $appointmentId){
@@ -68,9 +112,10 @@ class AppointmentService{
 
 	public function buildArray($secUserType, $appointment, $date){
 		return [
+			'appointment_id' => $appointment->id,
 			"{$this->secUserType}_name" => $secUserType->fname.' '.$secUserType->lname, 
-			'username' => $secUserType->username, 
-			'canceled' => $appointment->deleted, 
+			"{$this->secUserType}_username" => $secUserType->username, 
+			'cancelled' => $appointment->deleted, 
 			'time' => $appointment->time, 
 			'date' => $date->date
 		];

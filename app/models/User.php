@@ -101,6 +101,13 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         throw new NotFoundException($this->exceptionMessage);
     }
 
+     public function findByRecoveryCode($code){
+        if(!is_null($userInformation = static::where('code', '=', $code)->where('password_temp', '!=', '')->first())){
+            return $userInformation;
+        }
+        throw new NotFoundException($this->exceptionMessage);
+    }
+
     /**
      * Scopes allow you to easily re-use query logic in your models.
      * This function defines a scope that accepts parameters
@@ -109,13 +116,22 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
      * @return [type]        [description]
      */
 	public function scopeOfType($query, $type){
-        return $query->whereType($type);
+      return $query->whereType($type);
     }
 
-    public function findByRecoveryCode($code){
-        if(!is_null($userInformation = static::where('code', '=', $code)->where('password_temp', '!=', '')->first())){
-            return $userInformation;
-        }
-        throw new NotFoundException($this->exceptionMessage);
+    public function findByUsersTypeAndSearchAttributes(array $attributes){
+       $users = static::ofType($attributes['userType'])->where(
+            function($query) use ($attributes){
+                $query->where('fname', 'LIKE', '%'.$attributes['name'][0].'%')
+                      ->orWhere('lname', 'LIKE', '%'.$attributes['name'][1].'%')
+                      ->orWhere('zip', '=', $attributes['zip'])
+                      ->orWhere('address', 'LIKE', '%'.$attributes['city'].'%');
+            }
+        )->paginate($attributes['limit']);
+
+       if(!is_null($users)){
+            return $users;
+       }
+       throw new NotFoundException('No user found.');
     }
 }

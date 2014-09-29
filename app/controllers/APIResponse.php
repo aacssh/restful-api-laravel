@@ -65,12 +65,12 @@ class APIResponse extends BaseController{
 	 * @param  string $message
 	 * @return mixed
 	 */
-	public function respondSuccessWithDetails($message = 'Success', $userDetails = ''){
+	public function respondSuccessWithDetails($message = 'Success', $details = ''){
 		return $this->setStatusCode(IlluminateResponse::HTTP_OK)->respond([
 			'success' =>[
 				'message' => $message,
 				'status_code' => $this->getStatusCode(),
-				'data'	=>	$userDetails
+				'data'	=>	$details
 			]
 		]);
 	}
