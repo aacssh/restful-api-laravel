@@ -7,7 +7,6 @@
 | This file contains all of the routes for HairConnect application.
 |
 */
-
 /**
  * Below function groups all the routes and prefixies them (routes) with 'api/v1'
  */
@@ -24,4 +23,5 @@ Route::group(['prefix' => 'api/v1'], function(){
     Route::resource('barbers.appointments', 'BarbersAppointmentsController', ['except' => ['store', 'create', 'edit', 'update']]);
     Route::resource('clients.appointments', 'ClientsAppointmentsController', ['except' => ['create', 'edit', 'update']]);
     Route::resource('barbers.shifts', 'ShiftsController', ['except' =>	['create', 'edit', 'destroy']]);
+    Route::resource('barbers.images', 'ImagesController', ['except' =>  ['create', 'edit', 'destroy']]);
 });
